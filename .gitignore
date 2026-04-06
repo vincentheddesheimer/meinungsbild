@@ -1,0 +1,18 @@
+# R artifacts
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+renv/library/
+renv/staging/
+
+# Web build artifacts
+web/node_modules/
+web/.next/
+web/out/
+web/.env*.local
+web/next-env.d.ts
+
+# OS
+.DS_Store
+Thumbs.db

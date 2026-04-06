@@ -1,0 +1,5 @@
+issue_id,covariate,expected_dir,actual_r,correct
+immigration_restrict,fed_afd,+,0.841,TRUE
+climate_ego,fed_gruene,+,0.877,TRUE
+fear_immigration,fed_afd,-,0.899,FALSE
+political_interest,cty_pop_density,+,0.541,TRUE
