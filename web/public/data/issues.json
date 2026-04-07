@@ -451,6 +451,72 @@
     "direction": "higher=support ending"
   },
   {
+    "issue_id": "vote_afd",
+    "label": "Vote intention: AfD",
+    "label_de": "Sonntagsfrage: AfD",
+    "category": "vote_validation",
+    "question_de": "Wenn am nächsten Sonntag Bundestagswahl wäre, welche Partei würden Sie dann mit Ihrer Zweitstimme wählen?",
+    "question_en": "If the federal election were next Sunday, which party would you vote for with your second vote?",
+    "response_type": "categorical",
+    "binary_rule": "y=1 if == 322",
+    "direction": "higher=more support"
+  },
+  {
+    "issue_id": "vote_cdu",
+    "label": "Vote intention: CDU/CSU",
+    "label_de": "Sonntagsfrage: CDU/CSU",
+    "category": "vote_validation",
+    "question_de": "Wenn am nächsten Sonntag Bundestagswahl wäre, welche Partei würden Sie dann mit Ihrer Zweitstimme wählen?",
+    "question_en": "If the federal election were next Sunday, which party would you vote for with your second vote?",
+    "response_type": "categorical",
+    "binary_rule": "y=1 if == 1",
+    "direction": "higher=more support"
+  },
+  {
+    "issue_id": "vote_fdp",
+    "label": "Vote intention: FDP",
+    "label_de": "Sonntagsfrage: FDP",
+    "category": "vote_validation",
+    "question_de": "Wenn am nächsten Sonntag Bundestagswahl wäre, welche Partei würden Sie dann mit Ihrer Zweitstimme wählen?",
+    "question_en": "If the federal election were next Sunday, which party would you vote for with your second vote?",
+    "response_type": "categorical",
+    "binary_rule": "y=1 if == 5",
+    "direction": "higher=more support"
+  },
+  {
+    "issue_id": "vote_gruene",
+    "label": "Vote intention: Greens",
+    "label_de": "Sonntagsfrage: Grüne",
+    "category": "vote_validation",
+    "question_de": "Wenn am nächsten Sonntag Bundestagswahl wäre, welche Partei würden Sie dann mit Ihrer Zweitstimme wählen?",
+    "question_en": "If the federal election were next Sunday, which party would you vote for with your second vote?",
+    "response_type": "categorical",
+    "binary_rule": "y=1 if == 6",
+    "direction": "higher=more support"
+  },
+  {
+    "issue_id": "vote_linke",
+    "label": "Vote intention: DIE LINKE",
+    "label_de": "Sonntagsfrage: DIE LINKE",
+    "category": "vote_validation",
+    "question_de": "Wenn am nächsten Sonntag Bundestagswahl wäre, welche Partei würden Sie dann mit Ihrer Zweitstimme wählen?",
+    "question_en": "If the federal election were next Sunday, which party would you vote for with your second vote?",
+    "response_type": "categorical",
+    "binary_rule": "y=1 if == 7",
+    "direction": "higher=more support"
+  },
+  {
+    "issue_id": "vote_spd",
+    "label": "Vote intention: SPD",
+    "label_de": "Sonntagsfrage: SPD",
+    "category": "vote_validation",
+    "question_de": "Wenn am nächsten Sonntag Bundestagswahl wäre, welche Partei würden Sie dann mit Ihrer Zweitstimme wählen?",
+    "question_en": "If the federal election were next Sunday, which party would you vote for with your second vote?",
+    "response_type": "categorical",
+    "binary_rule": "y=1 if == 4",
+    "direction": "higher=more support"
+  },
+  {
     "issue_id": "voting_age_16",
     "label": "Voting age 16 for federal elections",
     "label_de": "Wahlberechtigung ab 16",

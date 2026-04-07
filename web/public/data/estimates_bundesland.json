@@ -3641,7 +3641,7 @@
     {
       "state_code": "03",
       "state_name": "Niedersachsen",
-      "estimate": 0.1469,
+      "estimate": 0.147,
       "pop": 6204994
     },
     {
@@ -3683,7 +3683,7 @@
     {
       "state_code": "10",
       "state_name": "Saarland",
-      "estimate": 0.1553,
+      "estimate": 0.1554,
       "pop": 809696
     },
     {
@@ -4014,6 +4014,594 @@
       "state_code": "16",
       "state_name": "Thüringen",
       "estimate": 0.5143,
+      "pop": 1614194
+    }
+  ],
+  "vote_afd": [
+    {
+      "state_code": "01",
+      "state_name": "Schleswig-Holstein",
+      "estimate": 0.0727,
+      "pop": 2313578
+    },
+    {
+      "state_code": "02",
+      "state_name": "Hamburg",
+      "estimate": 0.0631,
+      "pop": 1431449
+    },
+    {
+      "state_code": "03",
+      "state_name": "Niedersachsen",
+      "estimate": 0.0755,
+      "pop": 6204994
+    },
+    {
+      "state_code": "04",
+      "state_name": "Bremen",
+      "estimate": 0.0704,
+      "pop": 550759
+    },
+    {
+      "state_code": "05",
+      "state_name": "Nordrhein-Westfalen",
+      "estimate": 0.0796,
+      "pop": 14256301
+    },
+    {
+      "state_code": "06",
+      "state_name": "Hessen",
+      "estimate": 0.0783,
+      "pop": 4910495
+    },
+    {
+      "state_code": "07",
+      "state_name": "Rheinland-Pfalz",
+      "estimate": 0.0864,
+      "pop": 3149298
+    },
+    {
+      "state_code": "08",
+      "state_name": "Baden-Württemberg",
+      "estimate": 0.0882,
+      "pop": 8784086
+    },
+    {
+      "state_code": "09",
+      "state_name": "Bayern",
+      "estimate": 0.0889,
+      "pop": 10136201
+    },
+    {
+      "state_code": "10",
+      "state_name": "Saarland",
+      "estimate": 0.0925,
+      "pop": 809696
+    },
+    {
+      "state_code": "11",
+      "state_name": "Berlin",
+      "estimate": 0.0793,
+      "pop": 2877040
+    },
+    {
+      "state_code": "12",
+      "state_name": "Brandenburg",
+      "estimate": 0.1154,
+      "pop": 1973635
+    },
+    {
+      "state_code": "13",
+      "state_name": "Mecklenburg-Vorpommern",
+      "estimate": 0.123,
+      "pop": 1265934
+    },
+    {
+      "state_code": "14",
+      "state_name": "Sachsen",
+      "estimate": 0.1561,
+      "pop": 3118235
+    },
+    {
+      "state_code": "15",
+      "state_name": "Sachsen-Anhalt",
+      "estimate": 0.1366,
+      "pop": 1708066
+    },
+    {
+      "state_code": "16",
+      "state_name": "Thüringen",
+      "estimate": 0.1497,
+      "pop": 1614194
+    }
+  ],
+  "vote_cdu": [
+    {
+      "state_code": "01",
+      "state_name": "Schleswig-Holstein",
+      "estimate": 0.2366,
+      "pop": 2313578
+    },
+    {
+      "state_code": "02",
+      "state_name": "Hamburg",
+      "estimate": 0.19,
+      "pop": 1431449
+    },
+    {
+      "state_code": "03",
+      "state_name": "Niedersachsen",
+      "estimate": 0.258,
+      "pop": 6204994
+    },
+    {
+      "state_code": "04",
+      "state_name": "Bremen",
+      "estimate": 0.1999,
+      "pop": 550759
+    },
+    {
+      "state_code": "05",
+      "state_name": "Nordrhein-Westfalen",
+      "estimate": 0.2594,
+      "pop": 14256301
+    },
+    {
+      "state_code": "06",
+      "state_name": "Hessen",
+      "estimate": 0.2667,
+      "pop": 4910495
+    },
+    {
+      "state_code": "07",
+      "state_name": "Rheinland-Pfalz",
+      "estimate": 0.2651,
+      "pop": 3149298
+    },
+    {
+      "state_code": "08",
+      "state_name": "Baden-Württemberg",
+      "estimate": 0.2686,
+      "pop": 8784086
+    },
+    {
+      "state_code": "09",
+      "state_name": "Bayern",
+      "estimate": 0.3279,
+      "pop": 10136201
+    },
+    {
+      "state_code": "10",
+      "state_name": "Saarland",
+      "estimate": 0.2207,
+      "pop": 809696
+    },
+    {
+      "state_code": "11",
+      "state_name": "Berlin",
+      "estimate": 0.2112,
+      "pop": 2877040
+    },
+    {
+      "state_code": "12",
+      "state_name": "Brandenburg",
+      "estimate": 0.2389,
+      "pop": 1973635
+    },
+    {
+      "state_code": "13",
+      "state_name": "Mecklenburg-Vorpommern",
+      "estimate": 0.2323,
+      "pop": 1265934
+    },
+    {
+      "state_code": "14",
+      "state_name": "Sachsen",
+      "estimate": 0.2798,
+      "pop": 3118235
+    },
+    {
+      "state_code": "15",
+      "state_name": "Sachsen-Anhalt",
+      "estimate": 0.2532,
+      "pop": 1708066
+    },
+    {
+      "state_code": "16",
+      "state_name": "Thüringen",
+      "estimate": 0.2316,
+      "pop": 1614194
+    }
+  ],
+  "vote_fdp": [
+    {
+      "state_code": "01",
+      "state_name": "Schleswig-Holstein",
+      "estimate": 0.1413,
+      "pop": 2313578
+    },
+    {
+      "state_code": "02",
+      "state_name": "Hamburg",
+      "estimate": 0.135,
+      "pop": 1431449
+    },
+    {
+      "state_code": "03",
+      "state_name": "Niedersachsen",
+      "estimate": 0.1349,
+      "pop": 6204994
+    },
+    {
+      "state_code": "04",
+      "state_name": "Bremen",
+      "estimate": 0.1253,
+      "pop": 550759
+    },
+    {
+      "state_code": "05",
+      "state_name": "Nordrhein-Westfalen",
+      "estimate": 0.1391,
+      "pop": 14256301
+    },
+    {
+      "state_code": "06",
+      "state_name": "Hessen",
+      "estimate": 0.1414,
+      "pop": 4910495
+    },
+    {
+      "state_code": "07",
+      "state_name": "Rheinland-Pfalz",
+      "estimate": 0.1321,
+      "pop": 3149298
+    },
+    {
+      "state_code": "08",
+      "state_name": "Baden-Württemberg",
+      "estimate": 0.1626,
+      "pop": 8784086
+    },
+    {
+      "state_code": "09",
+      "state_name": "Bayern",
+      "estimate": 0.1354,
+      "pop": 10136201
+    },
+    {
+      "state_code": "10",
+      "state_name": "Saarland",
+      "estimate": 0.1319,
+      "pop": 809696
+    },
+    {
+      "state_code": "11",
+      "state_name": "Berlin",
+      "estimate": 0.1244,
+      "pop": 2877040
+    },
+    {
+      "state_code": "12",
+      "state_name": "Brandenburg",
+      "estimate": 0.1157,
+      "pop": 1973635
+    },
+    {
+      "state_code": "13",
+      "state_name": "Mecklenburg-Vorpommern",
+      "estimate": 0.1195,
+      "pop": 1265934
+    },
+    {
+      "state_code": "14",
+      "state_name": "Sachsen",
+      "estimate": 0.1258,
+      "pop": 3118235
+    },
+    {
+      "state_code": "15",
+      "state_name": "Sachsen-Anhalt",
+      "estimate": 0.1278,
+      "pop": 1708066
+    },
+    {
+      "state_code": "16",
+      "state_name": "Thüringen",
+      "estimate": 0.1217,
+      "pop": 1614194
+    }
+  ],
+  "vote_gruene": [
+    {
+      "state_code": "01",
+      "state_name": "Schleswig-Holstein",
+      "estimate": 0.2194,
+      "pop": 2313578
+    },
+    {
+      "state_code": "02",
+      "state_name": "Hamburg",
+      "estimate": 0.2365,
+      "pop": 1431449
+    },
+    {
+      "state_code": "03",
+      "state_name": "Niedersachsen",
+      "estimate": 0.1872,
+      "pop": 6204994
+    },
+    {
+      "state_code": "04",
+      "state_name": "Bremen",
+      "estimate": 0.2232,
+      "pop": 550759
+    },
+    {
+      "state_code": "05",
+      "state_name": "Nordrhein-Westfalen",
+      "estimate": 0.1753,
+      "pop": 14256301
+    },
+    {
+      "state_code": "06",
+      "state_name": "Hessen",
+      "estimate": 0.1811,
+      "pop": 4910495
+    },
+    {
+      "state_code": "07",
+      "state_name": "Rheinland-Pfalz",
+      "estimate": 0.1633,
+      "pop": 3149298
+    },
+    {
+      "state_code": "08",
+      "state_name": "Baden-Württemberg",
+      "estimate": 0.2246,
+      "pop": 8784086
+    },
+    {
+      "state_code": "09",
+      "state_name": "Bayern",
+      "estimate": 0.1702,
+      "pop": 10136201
+    },
+    {
+      "state_code": "10",
+      "state_name": "Saarland",
+      "estimate": 0.158,
+      "pop": 809696
+    },
+    {
+      "state_code": "11",
+      "state_name": "Berlin",
+      "estimate": 0.187,
+      "pop": 2877040
+    },
+    {
+      "state_code": "12",
+      "state_name": "Brandenburg",
+      "estimate": 0.1074,
+      "pop": 1973635
+    },
+    {
+      "state_code": "13",
+      "state_name": "Mecklenburg-Vorpommern",
+      "estimate": 0.116,
+      "pop": 1265934
+    },
+    {
+      "state_code": "14",
+      "state_name": "Sachsen",
+      "estimate": 0.1011,
+      "pop": 3118235
+    },
+    {
+      "state_code": "15",
+      "state_name": "Sachsen-Anhalt",
+      "estimate": 0.0917,
+      "pop": 1708066
+    },
+    {
+      "state_code": "16",
+      "state_name": "Thüringen",
+      "estimate": 0.0963,
+      "pop": 1614194
+    }
+  ],
+  "vote_linke": [
+    {
+      "state_code": "01",
+      "state_name": "Schleswig-Holstein",
+      "estimate": 0.0501,
+      "pop": 2313578
+    },
+    {
+      "state_code": "02",
+      "state_name": "Hamburg",
+      "estimate": 0.065,
+      "pop": 1431449
+    },
+    {
+      "state_code": "03",
+      "state_name": "Niedersachsen",
+      "estimate": 0.0466,
+      "pop": 6204994
+    },
+    {
+      "state_code": "04",
+      "state_name": "Bremen",
+      "estimate": 0.0814,
+      "pop": 550759
+    },
+    {
+      "state_code": "05",
+      "state_name": "Nordrhein-Westfalen",
+      "estimate": 0.0472,
+      "pop": 14256301
+    },
+    {
+      "state_code": "06",
+      "state_name": "Hessen",
+      "estimate": 0.0504,
+      "pop": 4910495
+    },
+    {
+      "state_code": "07",
+      "state_name": "Rheinland-Pfalz",
+      "estimate": 0.0482,
+      "pop": 3149298
+    },
+    {
+      "state_code": "08",
+      "state_name": "Baden-Württemberg",
+      "estimate": 0.0403,
+      "pop": 8784086
+    },
+    {
+      "state_code": "09",
+      "state_name": "Bayern",
+      "estimate": 0.0381,
+      "pop": 10136201
+    },
+    {
+      "state_code": "10",
+      "state_name": "Saarland",
+      "estimate": 0.0677,
+      "pop": 809696
+    },
+    {
+      "state_code": "11",
+      "state_name": "Berlin",
+      "estimate": 0.0941,
+      "pop": 2877040
+    },
+    {
+      "state_code": "12",
+      "state_name": "Brandenburg",
+      "estimate": 0.1122,
+      "pop": 1973635
+    },
+    {
+      "state_code": "13",
+      "state_name": "Mecklenburg-Vorpommern",
+      "estimate": 0.1147,
+      "pop": 1265934
+    },
+    {
+      "state_code": "14",
+      "state_name": "Sachsen",
+      "estimate": 0.1001,
+      "pop": 3118235
+    },
+    {
+      "state_code": "15",
+      "state_name": "Sachsen-Anhalt",
+      "estimate": 0.1197,
+      "pop": 1708066
+    },
+    {
+      "state_code": "16",
+      "state_name": "Thüringen",
+      "estimate": 0.1449,
+      "pop": 1614194
+    }
+  ],
+  "vote_spd": [
+    {
+      "state_code": "01",
+      "state_name": "Schleswig-Holstein",
+      "estimate": 0.2439,
+      "pop": 2313578
+    },
+    {
+      "state_code": "02",
+      "state_name": "Hamburg",
+      "estimate": 0.284,
+      "pop": 1431449
+    },
+    {
+      "state_code": "03",
+      "state_name": "Niedersachsen",
+      "estimate": 0.2581,
+      "pop": 6204994
+    },
+    {
+      "state_code": "04",
+      "state_name": "Bremen",
+      "estimate": 0.2605,
+      "pop": 550759
+    },
+    {
+      "state_code": "05",
+      "state_name": "Nordrhein-Westfalen",
+      "estimate": 0.2567,
+      "pop": 14256301
+    },
+    {
+      "state_code": "06",
+      "state_name": "Hessen",
+      "estimate": 0.2324,
+      "pop": 4910495
+    },
+    {
+      "state_code": "07",
+      "state_name": "Rheinland-Pfalz",
+      "estimate": 0.2543,
+      "pop": 3149298
+    },
+    {
+      "state_code": "08",
+      "state_name": "Baden-Württemberg",
+      "estimate": 0.1743,
+      "pop": 8784086
+    },
+    {
+      "state_code": "09",
+      "state_name": "Bayern",
+      "estimate": 0.1798,
+      "pop": 10136201
+    },
+    {
+      "state_code": "10",
+      "state_name": "Saarland",
+      "estimate": 0.2684,
+      "pop": 809696
+    },
+    {
+      "state_code": "11",
+      "state_name": "Berlin",
+      "estimate": 0.1984,
+      "pop": 2877040
+    },
+    {
+      "state_code": "12",
+      "state_name": "Brandenburg",
+      "estimate": 0.2142,
+      "pop": 1973635
+    },
+    {
+      "state_code": "13",
+      "state_name": "Mecklenburg-Vorpommern",
+      "estimate": 0.1937,
+      "pop": 1265934
+    },
+    {
+      "state_code": "14",
+      "state_name": "Sachsen",
+      "estimate": 0.1448,
+      "pop": 3118235
+    },
+    {
+      "state_code": "15",
+      "state_name": "Sachsen-Anhalt",
+      "estimate": 0.1856,
+      "pop": 1708066
+    },
+    {
+      "state_code": "16",
+      "state_name": "Thüringen",
+      "estimate": 0.1759,
       "pop": 1614194
     }
   ],

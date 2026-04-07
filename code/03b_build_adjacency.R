@@ -35,9 +35,12 @@ poststrat <- readRDS(file.path(mb_root, "data", "poststrat", "poststrat_kreis.rd
 target_codes <- sort(unique(poststrat$county_code))
 message("Target county codes from poststrat: ", length(target_codes))
 
-# Filter shapefile to target codes
+# Filter shapefile to target codes and dissolve multi-polygon counties
+# (some counties have multiple polygons for islands/exclaves)
 krs_sf <- krs_sf |>
   filter(county_code %in% target_codes) |>
+  group_by(county_code) |>
+  summarise(geometry = st_union(geometry), .groups = "drop") |>
   arrange(county_code)
 
 # Check for missing

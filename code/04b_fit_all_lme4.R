@@ -18,15 +18,21 @@
 
 library(tidyverse)
 library(lme4)
+library(future.apply)
 
 mb_root <- here::here()
 dir.create(file.path(mb_root, "data", "estimates", "models"), showWarnings = FALSE, recursive = TRUE)
+
+plan(multisession, workers = max(1L, parallelly::availableCores() - 1L))
+options(future.globals.maxSize = 1024 * 1024^2)  # 1 GiB
 
 # ---- 1. Load data -----------------------------------------------------------
 
 survey    <- readRDS(file.path(mb_root, "data", "harmonized", "survey_pooled.rds"))
 kreis_cov <- readRDS(file.path(mb_root, "data", "covariates", "kreis_covariates.rds"))
 poststrat <- readRDS(file.path(mb_root, "data", "poststrat", "poststrat_kreis.rds"))
+conc      <- read_csv(file.path(mb_root, "data", "issue_concordance.csv"),
+                      show_col_types = FALSE)
 
 # WKR crosswalk for WKR-level poststratification
 wkr_cw <- read_csv(
@@ -104,15 +110,13 @@ pred_wkr <- poststrat_wkr |>
 
 # ---- 4. Fit + poststratify function -----------------------------------------
 
-fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df) {
+fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df, conc_df) {
   d <- survey_data |>
     filter(issue_id == !!issue) |>
     drop_na(y, age_cat, male, educ_label, state_code)
 
   # Skip continuous outcomes (lr_self)
-  conc <- read_csv(file.path(mb_root, "data", "issue_concordance.csv"),
-                   show_col_types = FALSE)
-  if (any(conc$binary_rule[conc$issue_id == issue] == "continuous", na.rm = TRUE)) {
+  if (any(conc_df$binary_rule[conc_df$issue_id == issue] == "continuous", na.rm = TRUE)) {
     message("  Skipping continuous issue: ", issue)
     return(NULL)
   }
@@ -175,7 +179,7 @@ fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df)
       as.formula(formula_str),
       data = d,
       family = binomial(link = "logit"),
-      control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5)),
+      control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5), calc.derivs = FALSE),
       nAGQ = 0
     ),
     error = function(e) {
@@ -188,7 +192,7 @@ fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df)
           as.formula(formula_fallback),
           data = d,
           family = binomial(link = "logit"),
-          control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5)),
+          control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5), calc.derivs = FALSE),
           nAGQ = 0
         ),
         error = function(e2) {
@@ -251,13 +255,13 @@ issue_ids <- survey |>
 # Remove lr_self (continuous)
 issue_ids <- setdiff(issue_ids, "lr_self")
 
-message("\n=== Fitting ", length(issue_ids), " issues with lme4 ===\n")
+message("\n=== Fitting ", length(issue_ids), " issues with lme4 (",
+        parallelly::availableCores() - 1L, " workers) ===\n")
 
-results <- list()
-for (issue in issue_ids) {
-  message("[", which(issue_ids == issue), "/", length(issue_ids), "] ", issue)
-  results[[issue]] <- fit_and_poststratify(issue, survey, pred_kreis, pred_wkr)
-}
+results <- future_lapply(issue_ids, function(issue) {
+  fit_and_poststratify(issue, survey, pred_kreis, pred_wkr, conc)
+}, future.seed = TRUE)
+names(results) <- issue_ids
 
 # ---- 6. Stack and save estimates ---------------------------------------------
 

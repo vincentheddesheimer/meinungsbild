@@ -1,0 +1,194 @@
+---
+title: "MRP Validation Report"
+subtitle: "Meinungsbild"
+date: today
+format:
+  html:
+    embed-resources: true
+    toc: true
+    code-fold: true
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(tidyverse)
+library(knitr)
+
+mb_root    <- here::here()
+val_dir    <- file.path(mb_root, "output", "validation")
+checks_dir <- file.path(mb_root, "output", "checks")
+```
+
+## Overview
+
+This report summarizes validation tests for the Meinungsbild MRP estimates. Each section compares MRP-predicted quantities against observed ground truth. The goal is to assess how well the model recovers known geographic variation in outcomes that can be independently measured.
+
+| Test | Ground truth | Level | N units |
+|------|-------------|-------|---------|
+| Vote shares (2021 only, no election covs) | BTW 2021 county results | Kreis (400) | 6 parties |
+| Bundesland direct vs. MRP | Direct survey means | Bundesland (16) | 49 issues |
+
+## 1. Vote share validation (2021 only, no election covariates)
+
+We re-fit vote intention models using only 2021 survey data (N = 3,095 respondents, 129 Kreise with respondents) and compare county-level predictions against actual BTW 2021 second-vote shares.
+
+The validation models exclude all election result covariates (`fed_afd_share`, `fed_cdu_csu_share`, `fed_turnout`) from the right-hand side. The only county-level fixed effect is log population density. Geographic variation in predicted vote shares therefore comes entirely from demographic composition (age, gender, education), geographic random effects (state, county, electoral district), and population density. No actual vote share data enters the model as a predictor, making this a genuine out-of-sample test of the MRP framework's ability to recover partisan geography from survey demographics.
+
+```{r vote-2021}
+val_2021 <- read_csv(file.path(val_dir, "vote_share_validation_2021only.csv"),
+                     show_col_types = FALSE)
+
+val_2021 |>
+  select(Party = party, `r` = r, `RMSE (pp)` = rmse_pp,
+         `Bias (pp)` = bias_pp, `MRP mean (%)` = mean_mrp,
+         `Actual mean (%)` = mean_actual) |>
+  kable(digits = c(0, 3, 1, 1, 1, 1))
+```
+
+```{r vote-2021-summary}
+tibble(
+  Metric = c("Median r", "Median RMSE", "Median |bias|"),
+  Value  = c(
+    round(median(val_2021$r), 3),
+    paste0(round(median(val_2021$rmse_pp), 1), " pp"),
+    paste0(round(median(abs(val_2021$bias_pp)), 1), " pp")
+  )
+) |> kable()
+```
+
+```{r vote-2021-scatter, fig.width=10, fig.height=5}
+#| fig-cap: "MRP predicted vs. actual BTW 2021 county-level vote shares (2021 survey data, no election covariates)."
+knitr::include_graphics(file.path(val_dir, "vote_share_scatter_2021only.pdf"))
+```
+
+## 2. Internal consistency: Bundesland direct vs. MRP
+
+The main pipeline (08_check_pipeline.R) compares MRP Bundesland estimates against direct survey means for all 49 issues. This is not a true external validation (it uses the same survey data), but it checks whether the model's geographic smoothing distorts aggregate patterns.
+
+```{r bundesland-validation}
+val_bl <- read_csv(file.path(checks_dir, "validation_bundesland.csv"),
+                   show_col_types = FALSE)
+
+tibble(
+  Metric = c("N issues", "Median r", "Median RMSE",
+             "Issues with r < 0.5", "Issues with r > 0.9"),
+  Value  = c(
+    nrow(val_bl),
+    round(median(val_bl$r, na.rm = TRUE), 3),
+    paste0(round(100 * median(val_bl$rmse, na.rm = TRUE), 1), " pp"),
+    sum(val_bl$r < 0.5, na.rm = TRUE),
+    sum(val_bl$r > 0.9, na.rm = TRUE)
+  )
+) |> kable()
+```
+
+```{r bundesland-hist, fig.width=6, fig.height=3.5}
+#| fig-cap: "Distribution of Bundesland-level correlations (MRP vs. direct survey means) across 49 issues."
+val_bl |>
+  ggplot(aes(x = r)) +
+  geom_histogram(binwidth = 0.05, fill = "steelblue", color = "white") +
+  geom_vline(xintercept = median(val_bl$r, na.rm = TRUE),
+             linetype = "dashed", color = "red") +
+  annotate("text", x = median(val_bl$r, na.rm = TRUE) - 0.02,
+           y = Inf, label = paste0("median = ", round(median(val_bl$r, na.rm = TRUE), 3)),
+           vjust = 2, hjust = 1, size = 3.5, color = "red") +
+  labs(x = "Correlation (r)", y = "Count") +
+  theme_minimal(base_size = 11)
+```
+
+<!-- ================================================================== -->
+<!-- PLACEHOLDER SECTIONS FOR FUTURE VALIDATIONS                        -->
+<!-- Uncomment and fill in as new validation data becomes available.     -->
+<!-- ================================================================== -->
+
+<!--
+## 3. Eurobarometer validation
+
+Compare MRP Bundesland-level estimates for EU-related attitudes against
+Eurobarometer sub-national estimates for Germany.
+
+Ground truth: Eurobarometer regional data (NUTS-1 level).
+Issues: eu_integration, immigration_restrict, climate_ego.
+
+```{r eurobarometer}
+# val_eb <- read_csv(file.path(val_dir, "eurobarometer_validation.csv"),
+#                    show_col_types = FALSE)
+# val_eb |> kable(digits = 3)
+```
+-->
+
+<!--
+## 4. State election validation
+
+Compare MRP state-level vote share estimates against actual state election
+(Landtagswahl) results. Tests whether the model captures state-specific
+partisan variation beyond the federal election covariates.
+
+Ground truth: Landtagswahl results (state elections, various years).
+Issues: vote_cdu, vote_spd, vote_gruene, vote_afd (state-level).
+
+```{r state-elections}
+# val_ltw <- read_csv(file.path(val_dir, "state_election_validation.csv"),
+#                     show_col_types = FALSE)
+# val_ltw |> kable(digits = 3)
+```
+-->
+
+<!--
+## 5. Referendum / direct democracy validation
+
+Compare MRP Kreis-level estimates for specific policy attitudes against
+actual referendum results where available (e.g., Bavaria, Berlin).
+
+Ground truth: Municipal/state referendum results.
+Issues: Depends on referendum topic.
+
+```{r referendum}
+# val_ref <- read_csv(file.path(val_dir, "referendum_validation.csv"),
+#                     show_col_types = FALSE)
+# val_ref |> kable(digits = 3)
+```
+-->
+
+<!--
+## 6. Infratest dimap / Forschungsgruppe Wahlen state polls
+
+Compare MRP Bundesland-level estimates against published state-level
+polling averages from major German polling firms.
+
+Ground truth: Published state poll aggregates.
+Issues: vote_* (state-level).
+
+```{r state-polls}
+# val_polls <- read_csv(file.path(val_dir, "state_polls_validation.csv"),
+#                       show_col_types = FALSE)
+# val_polls |> kable(digits = 3)
+```
+-->
+
+## Summary
+
+```{r summary-table}
+tibble(
+  Validation = c(
+    "Vote shares, 2021 only, no election covs (vs. BTW 2021)",
+    "Bundesland direct vs. MRP (all 49 issues)"
+  ),
+  `Median r` = c(
+    median(val_2021$r),
+    median(val_bl$r, na.rm = TRUE)
+  ),
+  `Median RMSE (pp)` = c(
+    median(val_2021$rmse_pp),
+    100 * median(val_bl$rmse, na.rm = TRUE)
+  ),
+  `N comparisons` = c(
+    paste0(nrow(val_2021), " parties x 400 counties"),
+    paste0(nrow(val_bl), " issues x 16 states")
+  )
+) |> kable(digits = c(0, 3, 1, 0))
+```
+
+The external validation uses 2021-only survey data with no election covariates on the right-hand side, yielding a median county-level correlation of ~0.77 and RMSE of ~4.4 pp across six parties. Geographic variation in predicted vote shares comes entirely from demographic composition and population density, confirming that the MRP framework recovers meaningful partisan geography from survey demographics alone.

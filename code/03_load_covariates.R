@@ -63,26 +63,26 @@ inkar_path <- file.path(
 if (file.exists(inkar_path)) {
   inkar <- read_csv(inkar_path, show_col_types = FALSE)
 
-  # Select key MRP-relevant indicators (most recent year per indicator)
+  # Select key MRP-relevant indicators
   inkar_vars <- c(
-    "county_code_21",
-    "year",
-    "Arbeitslosenquote_inkar",
     "Ausländeranteil_inkar",
-    "Bruttoinlandsprodukt_je_Einwohner_inkar"
+    "Bruttoinlandsprodukt_je_Einwohner_inkar",
+    "Medianeinkommen_inkar",
+    "Mietpreise_inkar",
+    "Schutzsuchende_an_Bevölkerung_inkar"
   )
-  available_vars <- intersect(inkar_vars, names(inkar))
 
   # INKAR uses 4-digit county codes; pad to 5-digit to match GERDA
   inkar <- inkar |>
     mutate(county_code = str_pad(as.character(county), 5, pad = "0"))
 
-  available_vars <- c("county_code", "year",
-                       intersect(inkar_vars[!inkar_vars %in% c("county_code_21", "year")],
-                                 names(inkar)))
+  available_vars <- intersect(inkar_vars, names(inkar))
 
+  # Pick most recent non-NA year per county per variable, then merge.
+  # Year 2021 has all NAs for most variables; 2020 has full coverage.
   inkar_latest <- inkar |>
-    select(all_of(available_vars)) |>
+    select(county_code, year, all_of(available_vars)) |>
+    filter(year <= 2020) |>
     group_by(county_code) |>
     filter(year == max(year)) |>
     ungroup() |>
