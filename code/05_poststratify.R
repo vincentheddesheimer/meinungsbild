@@ -9,18 +9,18 @@
 ##   - Kreis poststrat: Zensus cells at Kreis level → aggregate to Bundesland
 ##   - WKR poststrat:   Kreis cells re-weighted via WKR-to-Kreis crosswalk
 ##
-## Inputs:  meinungsbild/data/estimates/models/fit_[issue_id].rds
-##          meinungsbild/data/poststrat/poststrat_kreis.rds
-##          meinungsbild/data/covariates/kreis_covariates.rds
-##          meinungsbild/data/raw/gles/crosswalk/btw_21_to_krs21.csv
-## Outputs: meinungsbild/data/estimates/estimates_kreis.rds
-##          meinungsbild/data/estimates/estimates_bundesland.rds
-##          meinungsbild/data/estimates/estimates_wkr.rds
+## Inputs:  data/estimates/models/fit_[issue_id].rds
+##          data/poststrat/poststrat_kreis.rds
+##          data/covariates/kreis_covariates.rds
+##          data/raw/gles/crosswalk/btw_21_to_krs21.csv
+## Outputs: data/estimates/estimates_kreis.rds
+##          data/estimates/estimates_bundesland.rds
+##          data/estimates/estimates_wkr.rds
 
 library(tidyverse)
 library(brms)
 
-mb_root <- file.path(here::here(), "meinungsbild")
+mb_root <- here::here()
 
 dir.create(file.path(mb_root, "data", "estimates"), showWarnings = FALSE, recursive = TRUE)
 

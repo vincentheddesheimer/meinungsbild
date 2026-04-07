@@ -10,14 +10,16 @@ library(ggrepel)
 
 # --- Paths -------------------------------------------------------------------
 
-base_dir   <- "meinungsbild"
-gerda_dir  <- "data/federal_elections/county_level/final"
-output_dir <- file.path(base_dir, "output", "validation")
+mb_root    <- here::here()
+gerda_root <- Sys.getenv("GERDA_ROOT",
+                         unset = normalizePath(file.path(here::here(), "..", "german_election_data"),
+                                               mustWork = FALSE))
+output_dir <- file.path(mb_root, "output", "validation")
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
 # --- Load MRP estimates ------------------------------------------------------
 
-estimates_kreis <- readRDS(file.path(base_dir, "output", "estimates_kreis.rds"))
+estimates_kreis <- readRDS(file.path(mb_root, "data", "estimates", "estimates_kreis.rds"))
 
 # Filter to vote_* issues
 vote_issues <- c("vote_cdu", "vote_spd", "vote_gruene", "vote_fdp",
@@ -34,7 +36,8 @@ message("MRP estimates: ", n_distinct(mrp$issue_id), " issues, ",
 
 # --- Load GERDA ground truth (BTW 2021) --------------------------------------
 
-fed_cty <- readRDS(file.path(gerda_dir, "federal_cty_harm.rds"))
+fed_cty <- readRDS(file.path(gerda_root, "data", "federal_elections",
+                            "county_level", "final", "federal_cty_harm.rds"))
 
 btw21 <- fed_cty |>
   filter(election_year == 2021) |>

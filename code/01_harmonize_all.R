@@ -5,25 +5,24 @@
 ## survey file for MRP estimation.
 ##
 ## Inputs:
-##   meinungsbild/data/raw/gles/ZA6832_v2-0-0.dta       (Tracking 2009-2023)
-##   meinungsbild/data/raw/gles/ZA10100_v2-0-0.dta       (Cross-Section 2025)
-##   meinungsbild/data/raw/gles/ZA10101_v3-0-0.dta       (RCS 2025)
-##   meinungsbild/data/raw/gles/ZA6835_v2-0-0.dta        (Cross-Section Cum. 2009-2021)
-##   meinungsbild/data/raw/gles/ZA6834_v1-0-0.dta        (Panel 2016-2021)
-##   meinungsbild/data/raw/allbus/ZA8974_v1-0-0.dta      (ALLBUS 2023-2024)
-##   meinungsbild/data/issue_concordance.csv
-##   meinungsbild/data/raw/gles/crosswalk/btw_*_to_krs21.csv
+##   data/raw/gles/ZA6832_v2-0-0.dta       (Tracking 2009-2023)
+##   data/raw/gles/ZA10100_v2-0-0.dta       (Cross-Section 2025)
+##   data/raw/gles/ZA10101_v3-0-0.dta       (RCS 2025)
+##   data/raw/gles/ZA6835_v2-0-0.dta        (Cross-Section Cum. 2009-2021)
+##   data/raw/gles/ZA6834_v1-0-0.dta        (Panel 2016-2021)
+##   data/raw/allbus/ZA8974_v1-0-0.dta      (ALLBUS 2023-2024)
+##   data/issue_concordance.csv
+##   data/raw/gles/crosswalk/btw_*_to_krs21.csv
 ##
 ## Outputs:
-##   meinungsbild/data/harmonized/survey_pooled.rds       (long format: 1 row per respondent × issue)
-##   meinungsbild/data/harmonized/survey_pooled_wide.rds  (wide format: 1 row per respondent, issues as columns)
+##   data/harmonized/survey_pooled.rds       (long format: 1 row per respondent × issue)
+##   data/harmonized/survey_pooled_wide.rds  (wide format: 1 row per respondent, issues as columns)
 
 library(tidyverse)
 library(haven)
 
 # ---- Paths ------------------------------------------------------------------
-gerda_root <- here::here()
-mb_root    <- file.path(gerda_root, "meinungsbild")
+mb_root    <- here::here()
 raw_gles   <- file.path(mb_root, "data", "raw", "gles")
 raw_allbus <- file.path(mb_root, "data", "raw", "allbus")
 out_dir    <- file.path(mb_root, "data", "harmonized")

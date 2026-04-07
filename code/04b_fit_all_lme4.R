@@ -19,7 +19,7 @@
 library(tidyverse)
 library(lme4)
 
-mb_root <- file.path(here::here(), "meinungsbild")
+mb_root <- here::here()
 dir.create(file.path(mb_root, "data", "estimates", "models"), showWarnings = FALSE, recursive = TRUE)
 
 # ---- 1. Load data -----------------------------------------------------------

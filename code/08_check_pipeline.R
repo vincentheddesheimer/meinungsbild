@@ -11,8 +11,7 @@ library(tidyverse)
 library(jsonlite)
 library(lme4)
 
-mb_root    <- file.path(here::here(), "meinungsbild")
-gerda_root <- here::here()
+mb_root <- here::here()
 
 dir.create(file.path(mb_root, "output", "checks"), showWarnings = FALSE, recursive = TRUE)
 

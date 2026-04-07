@@ -1,0 +1,4 @@
+# Path to the german_election_data repository
+# Needed by: 03_load_covariates.R, 03b_build_adjacency.R, 09_validate_vote_shares.R
+# Copy this file to .Renviron and adjust the path
+GERDA_ROOT=/path/to/german_election_data

@@ -1,20 +1,20 @@
 ## 07_export_estimates.R
 ## Export MRP estimates to JSON (for website) and CSV/Excel (for download)
 ##
-## Inputs:  meinungsbild/data/estimates/estimates_kreis.rds
-##          meinungsbild/data/estimates/estimates_bundesland.rds
-##          meinungsbild/data/estimates/estimates_wkr.rds
-##          meinungsbild/data/issue_concordance.csv
-## Outputs: meinungsbild/web/public/data/estimates_kreis.json
-##          meinungsbild/web/public/data/estimates_bundesland.json
-##          meinungsbild/web/public/data/estimates_wkr.json
-##          meinungsbild/web/public/data/issues.json
-##          meinungsbild/output/tables/estimates_*.csv
+## Inputs:  data/estimates/estimates_kreis.rds
+##          data/estimates/estimates_bundesland.rds
+##          data/estimates/estimates_wkr.rds
+##          data/issue_concordance.csv
+## Outputs: web/public/data/estimates_kreis.json
+##          web/public/data/estimates_bundesland.json
+##          web/public/data/estimates_wkr.json
+##          web/public/data/issues.json
+##          output/tables/estimates_*.csv
 
 library(tidyverse)
 library(jsonlite)
 
-mb_root <- file.path(here::here(), "meinungsbild")
+mb_root <- here::here()
 
 dir.create(file.path(mb_root, "web", "public", "data"), showWarnings = FALSE, recursive = TRUE)
 dir.create(file.path(mb_root, "output", "tables"), showWarnings = FALSE, recursive = TRUE)

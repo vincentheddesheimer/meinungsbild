@@ -2,14 +2,14 @@
 ## Parse Zensus 2022 table 2000S-3044 (Age × Gender × Schulabschluss at Kreis level)
 ## and build the actual poststratification frame.
 ##
-## Input:  meinungsbild/data/raw/zensus/2000S-3044_de.csv (manually downloaded from
+## Input:  data/raw/zensus/2000S-3044_de.csv (manually downloaded from
 ##         ergebnisse.zensus2022.de/datenbank/online)
-## Output: meinungsbild/data/poststrat/poststrat_kreis.rds
-##         meinungsbild/data/poststrat/poststrat_bundesland.rds
+## Output: data/poststrat/poststrat_kreis.rds
+##         data/poststrat/poststrat_bundesland.rds
 
 library(tidyverse)
 
-mb_root <- file.path(here::here(), "meinungsbild")
+mb_root <- here::here()
 
 zensus_path <- file.path(mb_root, "data", "raw", "zensus", "2000S-3044_de.csv")
 stopifnot(file.exists(zensus_path))

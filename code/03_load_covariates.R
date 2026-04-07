@@ -1,15 +1,17 @@
 ## 03_load_covariates.R
 ## Load geographic-level covariates for MRP from GERDA and regional statistics
 ##
-## Outputs: meinungsbild/data/covariates/kreis_covariates.rds
-##          meinungsbild/data/covariates/bundesland_covariates.rds
+## Outputs: data/covariates/kreis_covariates.rds
+##          data/covariates/bundesland_covariates.rds
 
 library(tidyverse)
 library(sf)
 
 # ---- Paths ----------------------------------------------------------------
-gerda_root <- here::here()  # german_election_data root
-mb_root    <- file.path(gerda_root, "meinungsbild")
+mb_root    <- here::here()
+gerda_root <- Sys.getenv("GERDA_ROOT",
+                         unset = normalizePath(file.path(here::here(), "..", "german_election_data"),
+                                               mustWork = FALSE))
 
 dir.create(file.path(mb_root, "data", "covariates"), showWarnings = FALSE, recursive = TRUE)
 

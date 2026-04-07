@@ -11,18 +11,17 @@
 ## download), replace this synthetic frame with the actual census data.
 ##
 ## Inputs:
-##   meinungsbild/data/covariates/kreis_covariates.rds
-##   (optional) meinungsbild/data/raw/zensus/zensus_kreis_age_gender.csv
-##   (optional) meinungsbild/data/raw/zensus/zensus_kreis_education.csv
+##   data/covariates/kreis_covariates.rds
+##   (optional) data/raw/zensus/zensus_kreis_age_gender.csv
+##   (optional) data/raw/zensus/zensus_kreis_education.csv
 ##
 ## Outputs:
-##   meinungsbild/data/poststrat/poststrat_kreis.rds
-##   meinungsbild/data/poststrat/poststrat_bundesland.rds
+##   data/poststrat/poststrat_kreis.rds
+##   data/poststrat/poststrat_bundesland.rds
 
 library(tidyverse)
 
-mb_root    <- file.path(here::here(), "meinungsbild")
-gerda_root <- here::here()
+mb_root <- here::here()
 dir.create(file.path(mb_root, "data", "poststrat"), showWarnings = FALSE, recursive = TRUE)
 
 # ---- 1. Load Kreis-level population ----------------------------------------

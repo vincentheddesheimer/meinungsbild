@@ -13,6 +13,9 @@ web/out/
 web/.env*.local
 web/next-env.d.ts
 
+# Environment
+.Renviron
+
 # OS
 .DS_Store
 Thumbs.db

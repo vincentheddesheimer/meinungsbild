@@ -2,15 +2,17 @@
 ## Build Kreis-level adjacency matrix from VG250_KRS shapefiles
 ## for BYM2 spatial smoothing in brms.
 ##
-## Input:  german_election_data/data/shapefiles/2021/vg250_ebenen_0101/VG250_KRS.shp
-## Output: meinungsbild/data/covariates/kreis_adjacency.rds  (binary adjacency matrix W)
+## Input:  ${GERDA_ROOT}/data/shapefiles/2021/vg250_ebenen_0101/VG250_KRS.shp
+## Output: data/covariates/kreis_adjacency.rds  (binary adjacency matrix W)
 
 library(sf)
 library(spdep)
 library(tidyverse)
 
-gerda_root <- here::here()
-mb_root    <- file.path(gerda_root, "meinungsbild")
+mb_root    <- here::here()
+gerda_root <- Sys.getenv("GERDA_ROOT",
+                         unset = normalizePath(file.path(here::here(), "..", "german_election_data"),
+                                               mustWork = FALSE))
 
 # ---- 1. Load Kreis shapefile -------------------------------------------------
 

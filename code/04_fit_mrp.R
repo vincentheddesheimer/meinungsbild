@@ -27,14 +27,14 @@
 ##       fed_turnout_z + log_pop_density_z +
 ##       unemployment_z
 ##
-## Inputs:  meinungsbild/data/harmonized/survey_pooled.rds
-##          meinungsbild/data/covariates/kreis_covariates.rds
-## Outputs: meinungsbild/data/estimates/models/fit_[issue_id].rds
+## Inputs:  data/harmonized/survey_pooled.rds
+##          data/covariates/kreis_covariates.rds
+## Outputs: data/estimates/models/fit_[issue_id].rds
 
 library(tidyverse)
 library(brms)
 
-mb_root <- file.path(here::here(), "meinungsbild")
+mb_root <- here::here()
 dir.create(file.path(mb_root, "data", "estimates", "models"),
            showWarnings = FALSE, recursive = TRUE)
 
