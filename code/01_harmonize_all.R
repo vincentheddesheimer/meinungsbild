@@ -171,21 +171,14 @@ extract_tracking <- function() {
     birth_year    = as_num(d$s0002)  # s0002 is year of birth, NOT age
   )
 
-  # Infer year: the tracking study waves map to specific time periods.
-  # za_nr_od contains the original sub-study number which maps to election cycles.
-  # We'll use the Wahlkreis phase assignments as a year proxy:
-  # Phase 1 = 2009 boundaries → ~2009-2012
-  # Phase 2 = 2013 boundaries → ~2013-2016
-  # Phase 3 = 2017 boundaries → ~2017
-  # Phase 4 = 2017 boundaries (redistricting) → ~2018-2020
+  # Derive year from actual interview date (field_start).
+  # Previous approach used WKR boundary phases as a year proxy, which collapsed
+  # all Phase 5 respondents (2021-2023) into year=2022. Using field_start gives
+  # correct year assignment, which matters for year-specific validation
+  # (e.g., comparing 2021 vote intentions against BTW 2021 results).
+  out$year <- as.integer(substr(as.character(d$field_start), 1, 4))
 
-  # Phase 5 = 2021 boundaries → ~2021-2023
-  # More precisely: use the original study number to infer election year
-  za_nr_od <- as_num(d$za_nr_od)
-
-  # Map original study numbers to approximate years
-  # ZA5700-5757 are pre-election through post-election studies for different BTW cycles
-  # We'll derive from phase assignments which is more reliable
+  # WKR boundary phase (needed for crosswalk matching)
   wkr_phase <- case_when(
     !is.na(as_num(d$t0001_1)) ~ 1L,
     !is.na(as_num(d$t0001_2)) ~ 2L,
@@ -193,16 +186,6 @@ extract_tracking <- function() {
     !is.na(as_num(d$t0001_4)) ~ 4L,
     !is.na(as_num(d$t0001_5)) ~ 5L,
     TRUE                      ~ NA_integer_
-  )
-
-  # Phase → approximate midpoint year
-  out$year <- case_when(
-    wkr_phase == 1 ~ 2010L,
-    wkr_phase == 2 ~ 2014L,
-    wkr_phase == 3 ~ 2017L,
-    wkr_phase == 4 ~ 2019L,
-    wkr_phase == 5 ~ 2022L,
-    TRUE           ~ NA_integer_
   )
 
   # Wahlkreis: coalesce across phases
