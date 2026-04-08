@@ -9,16 +9,18 @@ We use **multilevel regression and poststratification (MRP)** estimated with `lm
 For each binary issue:
 
 ```r
-y ~ male +
+y ~ male + employed +
     fed_afd_share_z + fed_cdu_share_z + fed_turnout_z + log_pop_density_z +
     (1 | age_cat) + (1 | educ_label) +
     (1 | educ_label:age_cat) + (1 | male:age_cat) + (1 | male:educ_label) +
+    (1 | employed:age_cat) +
     (1 | survey_source) + (1 | legperiod) +
     (1 | state_code) + (1 | county_code) + (1 | wkr_nr)
 ```
 
 **Fixed effects:**
 - `male` — gender (binary)
+- `employed` — employment status (binary: employed vs. not employed)
 - `fed_afd_share_z` — standardized AfD vote share at most recent federal election
 - `fed_cdu_share_z` — standardized CDU/CSU vote share
 - `fed_turnout_z` — standardized voter turnout
@@ -30,6 +32,7 @@ y ~ male +
 - `educ_label:age_cat` — education × age interaction (25 cells)
 - `male:age_cat` — gender × age interaction (10 cells)
 - `male:educ_label` — gender × education interaction (10 cells)
+- `employed:age_cat` — employment × age interaction (10 cells)
 - `survey_source` — absorbs mode/house effects across 5 survey programs
 - `legperiod` — legislative period (absorbs temporal shifts)
 - `state_code` — 16 federal states
@@ -60,8 +63,8 @@ Total: 1.7 million issue-response observations across 43 binary issues.
 ### Poststratification frame
 
 Zensus 2022 cross-tabulations of age × sex × education at the county level.
-- 400 counties × 50 demographic cells = 20,000 poststratification cells
-- Population: ~70 million adults (18+)
+- 400 counties × 100 demographic cells = 40,000 poststratification cells
+- Population: ~65 million adults (15+)
 - Berlin: Bezirk-level demographics (12 Bezirke × 50 cells) replace the single county frame for Wahlkreis-level estimates (see below)
 
 ### Geographic covariates

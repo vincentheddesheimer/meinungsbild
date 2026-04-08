@@ -51,7 +51,7 @@ Each respondent is assigned to a legislative period (Legislaturperiode) based on
 
 The poststratification frame tells the model how many people of each demographic type live in each geographic unit. Without it, MRP cannot translate individual-level predictions into area-level estimates.
 
-We construct the frame from **Zensus 2022** cross-tabulations of age $\times$ sex $\times$ education at the county level. Each county is divided into 50 demographic cells: 5 age groups $\times$ 2 gender categories $\times$ 5 education levels. Across Germany's roughly 400 counties, this yields about 20,000 cells covering approximately 70 million adults.
+We construct the frame from **Zensus 2022** cross-tabulations of age $\times$ sex $\times$ education $\times$ employment status at the county level (table 2000S-4020). Each county is divided into 100 demographic cells: 5 age groups $\times$ 2 gender categories $\times$ 5 education levels $\times$ 2 employment statuses (employed or not employed). Across Germany's 400 counties, this yields 40,000 cells covering approximately 65 million adults aged 15 and older.
 
 One complication: the Zensus publishes school-leaving qualifications (Schulabschluss) but not tertiary degrees at the county level in its cross-tabulations. To approximate the university category, we use a national-level Zensus estimate that about 55% of Abitur holders also hold a university degree, and apply this split uniformly across counties. This is an approximation; the true university share varies regionally. However, the model's state- and county-level random effects can absorb much of this variation, so the approximation is unlikely to introduce large bias.
 
@@ -66,7 +66,7 @@ We include four county-level covariates, all standardized to mean zero and unit 
 - **Voter turnout** (`fed_turnout_z`): reflects political engagement and mobilization patterns.
 - **Log population density** (`log_pop_density_z`): distinguishes urban from rural areas, which differ systematically on many policy attitudes.
 
-Election results come from GERDA (the German Election Database); population density comes from INKAR. All covariates are z-scored so that their coefficients are comparable in magnitude.
+Election results come from GERDA (the German Election Database); population density comes from INKAR (Indikatoren und Karten zur Raum- und Stadtentwicklung, a federal spatial monitoring database). All covariates are z-scored so that their coefficients are comparable in magnitude.
 
 We deliberately omit an East Germany indicator. It is highly collinear with AfD vote share ($r > 0.8$), and including both caused the model to attribute geographic variation to the fixed effects rather than letting the random effects capture it. Dropping the East dummy and retaining AfD share produced more stable estimates.
 
@@ -75,17 +75,18 @@ We deliberately omit an East Germany indicator. It is highly collinear with AfD 
 For each of the 43 binary issues, we fit a separate logistic multilevel model:
 
 ```r
-y ~ male +
+y ~ male + employed +
     fed_afd_share_z + fed_cdu_share_z + fed_turnout_z + log_pop_density_z +
     (1 | age_cat) + (1 | educ_label) +
     (1 | educ_label:age_cat) + (1 | male:age_cat) + (1 | male:educ_label) +
+    (1 | employed:age_cat) +
     (1 | survey_source) + (1 | legperiod) +
     (1 | state_code) + (1 | county_code) + (1 | wkr_nr)
 ```
 
 ### Fixed effects
 
-The five fixed effects capture individual gender and area-level political context. Gender enters as a fixed effect because it has only two levels, too few for partial pooling to help. The four county-level covariates enter as fixed effects because we want them to have a consistent linear relationship with opinion across all areas; if they entered as random effects, their influence would be pooled toward zero.
+The six fixed effects capture individual demographics (gender, employment status) and area-level political context. Gender and employment enter as fixed effects because they have only two levels each, too few for partial pooling to help. The four county-level covariates enter as fixed effects because we want them to have a consistent linear relationship with opinion across all areas; if they entered as random effects, their influence would be pooled toward zero.
 
 ### Random effects
 
@@ -93,7 +94,7 @@ Each `(1 | group)` term adds a varying intercept for that grouping variable. The
 
 The random effects fall into three categories:
 
-**Demographic main effects and interactions.** Following Ghitza and Gelman (2013), we include varying intercepts for age, education, and all three pairwise interactions (education $\times$ age, gender $\times$ age, gender $\times$ education). These "deep interactions" allow the model to capture nonlinear demographic patterns: for instance, young men without a university degree may hold systematically different views than what a simple additive model of age + gender + education would predict. Goplerud (2024) shows that this deep interaction structure performs comparably to machine learning ensembles for MRP.
+**Demographic main effects and interactions.** Following Ghitza and Gelman (2013), we include varying intercepts for age, education, and all pairwise interactions involving gender, age, and education, plus an employment $\times$ age interaction. These "deep interactions" allow the model to capture nonlinear demographic patterns: for instance, young men without a university degree may hold systematically different views than what a simple additive model of age + gender + education would predict. The employment $\times$ age interaction captures the fact that non-employment carries different political signals for retirees than for working-age adults. Goplerud (2024) shows that this deep interaction structure performs comparably to machine learning ensembles for MRP.
 
 **Survey design effects.** Random intercepts for `survey_source` (5 levels) and `legperiod` (4--5 levels) absorb systematic differences between survey programs and time periods. This prevents, say, the ALLBUS's higher proportion of older respondents from distorting the demographic intercepts.
 
@@ -115,7 +116,7 @@ $$
 \hat{\theta}_g = \sum_j \frac{N_{jg}}{N_g} \times \Pr(y=1 \mid \text{demographics}_j, \text{geography}_g)
 $$
 
-Here $g$ indexes a geographic unit (county, state, or Wahlkreis), $j$ indexes the 50 demographic cells within that unit, $N_{jg}$ is the census count of people in cell $j$ of unit $g$, and $N_g = \sum_j N_{jg}$ is the total adult population. The predicted probability $\Pr(y=1)$ comes from the fitted model evaluated at the demographics and covariates of each cell.
+Here $g$ indexes a geographic unit (county, state, or Wahlkreis), $j$ indexes the 100 demographic cells within that unit (5 age $\times$ 2 gender $\times$ 5 education $\times$ 2 employment), $N_{jg}$ is the census count of people in cell $j$ of unit $g$, and $N_g = \sum_j N_{jg}$ is the total adult population. The predicted probability $\Pr(y=1)$ comes from the fitted model evaluated at the demographics and covariates of each cell.
 
 This reweighting is what makes MRP work for small areas. Even if a county's survey respondents are disproportionately old and male, the poststratification step corrects for this by weighting each demographic cell according to its true population share.
 
@@ -127,24 +128,65 @@ This reweighting is what makes MRP work for small areas. Even if a county's surv
 
 ## Validation
 
-We validate the MRP estimates by comparing them to direct survey means at the Bundesland level, where sample sizes are large enough for direct estimation to be reasonably precise.
+We validate MRP estimates through two approaches: an external validation against county-level election results and an internal consistency check against direct survey means at the state level.
 
-### Bundesland-level performance
+### External validation: county-level vote shares
 
-- **Median correlation: $r$ = 0.899** across 43 issues. This means that for the typical issue, the MRP estimates track the rank ordering of states well: states where direct survey averages are high also have high MRP estimates, and vice versa.
-- **Median RMSE: 5.5 percentage points.** On a 0--100 scale, the typical MRP estimate is within about 5.5 points of the direct survey estimate. This is a reasonable level of accuracy given that the direct estimates themselves carry sampling error.
+The production model uses federal election results (AfD vote share, CDU/CSU vote share, turnout) as county-level covariates. Including actual vote shares on the right-hand side when validating predicted vote shares would be partly circular. The validation models therefore exclude all election covariates, using only demographics, log population density, and geographic random effects. This makes the comparison a genuine out-of-sample test: the model must recover county-level partisan variation from individual demographics and geographic structure alone.
 
-Some issues perform markedly better: ukraine\_arms ($r$ = 0.993), rent\_control (0.992), taxes\_vs\_spending (0.988), and nuclear\_energy (0.981) show near-perfect state-level tracking. These tend to be issues with strong regional variation and large sample sizes.
+**Ground truth.** Official BTW 2021 county-level second-vote shares for six parties (CDU/CSU, SPD, Gruene, FDP, AfD, DIE LINKE) across all 400 Kreise, from the German Election Database (GERDA).
 
-Six issues have correlations below 0.5: internet\_control, income\_reduce, econ\_current\_personal, mandatory\_service, fear\_war, and higher\_earners\_tax. These are flagged as low-confidence on the website. Low performance typically reflects either weak geographic variation (the issue divides people demographically but not regionally) or small sample sizes.
+**Survey data.** GLES Tracking and Cross-Section Cumulation respondents with valid vote intention. We test two year windows: 2021 only (4,533 observations across 245 Kreise with at least one respondent) and 2020--2021 (7,097 observations, same 245 Kreise). The remaining 155 counties have no survey respondents; the model predicts their vote shares using demographic composition, state-level random effects, and fixed effects, without estimating county-specific intercepts.
+
+**Specifications.** We compare seven model specifications to assess the marginal contribution of additional survey data, individual-level covariates, and county-level covariates:
+
+| Specification | Year window | Individual covariates | County covariates | N obs |
+|---------------|-------------|----------------------|-------------------|------:|
+| Baseline | 2020--2021 | age, gender, education | log pop density | 7,097 |
+| + Employment | 2020--2021 | + employed (binary) | log pop density | 6,998 |
+| LASSO-selected | 2020--2021 | age, gender, education | LASSO-selected | 7,097 |
+| Baseline | 2021 | age, gender, education | log pop density | 4,533 |
+| + Employment | 2021 | + employed (binary) | log pop density | 4,481 |
+| All INKAR | 2021 | age, gender, education | pop density + 4 INKAR | 4,533 |
+| LASSO-selected | 2021 | age, gender, education | LASSO-selected | 4,533 |
+
+The INKAR county-level covariate candidates are foreign-born share, median income, rent levels, and refugee share (all z-scored). LASSO selection uses `glmmLasso` with BIC-tuned $L_1$ penalization over the five county-level candidates (log population density plus the four INKAR variables); selected covariates are then refitted with `glmer` for poststratification.
+
+Employment status is binary (employed = full-time or part-time; not employed = unemployed, retired, student, etc.) and enters the model as a fixed effect plus an employment-by-age random effect interaction. The employment specifications use an expanded 100-cell poststratification frame (Zensus 2022: age $\times$ gender $\times$ education $\times$ employment at Kreis level), compared to the 50-cell frame used by all other specifications.
+
+**Results.** For each party, we compute the correlation ($r$) and root mean squared error (RMSE) between MRP-predicted and actual county-level vote shares across all 400 Kreise. The table reports the median of these six party-specific values.
+
+| Specification | Median $r$ | Median RMSE (pp) |
+|---------------|:----------:|:----------------:|
+| + Employment (2020--2021) | 0.826 | 4.2 |
+| Baseline (2020--2021) | 0.824 | 4.2 |
+| + Employment (2021) | 0.802 | 4.3 |
+| LASSO-selected (2020--2021) | 0.799 | 4.6 |
+| Baseline (2021) | 0.798 | 4.3 |
+| LASSO-selected (2021) | 0.781 | 4.6 |
+| All INKAR (2021) | 0.773 | 4.5 |
+
+The strongest lever for improving estimates is additional survey data: the 2020--2021 window outperforms all 2021-only specifications regardless of model complexity, with median $r$ of 0.824 versus 0.798 for the baseline. Adding employment status as an individual-level covariate improves median $r$ from 0.824 to 0.826 in the two-year window and from 0.798 to 0.802 in 2021 only. The gains are concentrated in FDP (+0.021 in the two-year window) and CDU/CSU (+0.007), while predictions for Gruene slightly worsen ($-$0.004) in both windows. The employment-by-age interaction captures variation in how employment status relates to vote choice across age groups, consistent with the expectation that employment carries different political signals for younger workers versus retirees.
+
+Adding county-level INKAR covariates without regularization degrades performance (median $r$ drops from 0.798 to 0.773), reflecting overfitting with only 245 observed Kreise. LASSO selection partially mitigates this in the 2021-only window (0.781 versus 0.773) but does not help in the two-year window (0.799, below the 0.824 baseline). The geographic random effects (state, county, Wahlkreis) already absorb much of the spatial variation that these covariates would add, leaving little room for improvement from county-level predictors.
+
+This validation is conservative. The production model includes election covariates (AfD share, CDU/CSU share, turnout) that are excluded here, so production estimates should perform better than these validation numbers suggest. The validation also covers only vote intention, which is a blunt test for a model designed to estimate attitudes on 43 policy issues; employment status, for instance, should matter more for economic policy attitudes than for party preference.
+
+### Internal consistency: Bundesland direct vs. MRP
+
+For all 43 issues, we compare MRP state-level estimates against direct survey means. This is not a true external validation (it uses the same survey data), but it checks whether the model's geographic smoothing distorts aggregate patterns.
+
+Across the 43 policy issues, the median correlation between MRP and direct estimates is 0.899, and the median RMSE is 5.5 percentage points.
+
+Top-performing issues include ukraine\_arms ($r$ = 0.993), rent\_control (0.992), taxes\_vs\_spending (0.988), and nuclear\_energy (0.981). Four issues have correlations below 0.5: mandatory\_service ($r$ = 0.33), econ\_current\_personal (0.35), eu\_integration (0.38), and state\_out\_economy (0.45). Low performance typically reflects weak geographic variation (the issue divides people demographically but not regionally) or small sample sizes.
 
 ### Face validity
 
-Beyond correlations, we check that the estimates relate to external covariates in expected directions. For instance, MRP estimates of support for immigration restriction should correlate positively with county-level AfD vote share; climate policy priority should correlate with Green party vote share; and democracy satisfaction should be lower in East German counties than West German ones. These checks confirm that the model is picking up substantively meaningful geographic patterns, not just noise.
+We check that the estimates relate to external covariates in expected directions: support for immigration restriction correlates positively with county-level AfD vote share; climate policy priority correlates with Green party vote share; democracy satisfaction is lower in East German counties. These checks confirm that the model captures substantively meaningful geographic patterns.
 
 ### Low-confidence flags
 
-Issues are flagged on the website if their Bundesland-level correlation falls below 0.5 or if the within-issue geographic variation is implausibly low (SD $<$ 1 percentage point across counties). Flagged issues remain visible but are marked to signal that the estimates should be interpreted with caution.
+Issues are flagged on the website if their Bundesland-level correlation falls below 0.5 or if geographic variation is implausibly low (SD $<$ 1 percentage point across counties). Flagged issues remain visible but are marked to signal that the estimates should be interpreted with caution.
 
 ## Geographic boundaries
 

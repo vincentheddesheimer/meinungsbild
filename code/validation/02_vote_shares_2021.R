@@ -51,17 +51,32 @@ inkar_vars <- c("foreigner_share_z", "median_income_z", "rent_z", "refugee_share
 
 # ---- 3. Build poststrat prediction data --------------------------------------
 
-pred_kreis <- poststrat |>
+# 100-cell frame (with employment) for specs that use it
+pred_kreis_100 <- poststrat |>
+  left_join(kreis_cov_std |> select(county_code, log_pop_density_z, all_of(inkar_vars)),
+            by = "county_code") |>
+  mutate(male = as.integer(male), employed = as.integer(employed), wkr_nr = NA_character_)
+
+# 50-cell frame (without employment) for baseline specs
+pred_kreis_50 <- poststrat |>
+  group_by(county_code, age_cat, male, educ_label, state_code) |>
+  summarise(N = sum(N), .groups = "drop") |>
   left_join(kreis_cov_std |> select(county_code, log_pop_density_z, all_of(inkar_vars)),
             by = "county_code") |>
   mutate(male = as.integer(male), wkr_nr = NA_character_)
 
+# Default pred_kreis for existing specs (50-cell)
+pred_kreis <- pred_kreis_50
+
 # ---- 4. Fit + poststratify function ------------------------------------------
 
-fit_and_poststratify_kreis <- function(issue, survey_data, use_inkar = FALSE) {
+fit_and_poststratify_kreis <- function(issue, survey_data, use_inkar = FALSE, use_employed = FALSE) {
+  drop_vars <- c("y", "age_cat", "male", "educ_label", "state_code")
+  if (use_employed) drop_vars <- c(drop_vars, "employed")
+
   d <- survey_data |>
     filter(issue_id == !!issue) |>
-    drop_na(y, age_cat, male, educ_label, state_code)
+    drop_na(all_of(drop_vars))
 
   if (nrow(d) < 300) {
     message("  Skipping ", issue, ": only ", nrow(d), " obs")
@@ -83,7 +98,9 @@ fit_and_poststratify_kreis <- function(issue, survey_data, use_inkar = FALSE) {
       legperiod     = factor(legperiod),
       county_code   = ifelse(is.na(county_code), "missing", county_code),
       wkr_nr        = as.character(wkr_nr)
-    ) |>
+    )
+  if (use_employed) d <- d |> mutate(employed = as.integer(employed))
+  d <- d |>
     filter(!is.na(wkr_nr)) |>
     droplevels()
 
@@ -103,8 +120,10 @@ fit_and_poststratify_kreis <- function(issue, survey_data, use_inkar = FALSE) {
   } else {
     fe <- "y ~ male + log_pop_density_z"
   }
+  if (use_employed) fe <- paste0(fe, " + employed")
 
   re <- "(1 | age_cat) + (1 | educ_label) + (1 | educ_label:age_cat) + (1 | male:age_cat) + (1 | male:educ_label)"
+  if (use_employed) re <- paste0(re, " + (1 | employed:age_cat)")
   if (n_sources > 1) re <- paste0(re, " + (1 | survey_source)")
   if (n_legper > 1)  re <- paste0(re, " + (1 | legperiod)")
   if (n_states > 1)  re <- paste0(re, " + (1 | state_code)")
@@ -135,7 +154,8 @@ fit_and_poststratify_kreis <- function(issue, survey_data, use_inkar = FALSE) {
 
   if (is.null(fit)) return(NULL)
 
-  pk <- pred_kreis |>
+  pred_df <- if (use_employed) pred_kreis_100 else pred_kreis_50
+  pk <- pred_df |>
     mutate(
       survey_source = factor(levels(d$survey_source)[1], levels = levels(d$survey_source)),
       legperiod     = factor(tail(sort(unique(as.character(d$legperiod))), 1),
@@ -179,11 +199,11 @@ party_labels <- c(vote_cdu = "CDU/CSU", vote_spd = "SPD", vote_gruene = "Grüne"
 
 # ---- 6. Helper: run a spec and validate --------------------------------------
 
-run_spec <- function(spec_name, use_inkar, survey_data = survey_2021) {
+run_spec <- function(spec_name, use_inkar, use_employed = FALSE, survey_data = survey_2021) {
   message("\n=== ", spec_name, " ===\n")
 
   results <- future_lapply(vote_issues, function(issue) {
-    fit_and_poststratify_kreis(issue, survey_data, use_inkar = use_inkar)
+    fit_and_poststratify_kreis(issue, survey_data, use_inkar = use_inkar, use_employed = use_employed)
   }, future.seed = TRUE)
   names(results) <- vote_issues
 
@@ -261,11 +281,14 @@ select_and_fit_lasso <- function(issue, survey_data) {
   lambdas <- c(500, 200, 100, 50, 20, 10, 5, 2, 1)
   best_bic <- Inf
   best_lambda <- lambdas[1]
+  fit_best <- NULL
+
+  fix_formula <- as.formula(paste("y ~ male +", paste(candidate_covs, collapse = " + ")))
 
   for (lam in lambdas) {
     fit_l <- tryCatch(
       glmmLasso(
-        fix = as.formula(paste("y ~ male +", paste(candidate_covs, collapse = " + "))),
+        fix = fix_formula,
         rnd = list(state_code = ~1),
         data = d,
         lambda = lam,
@@ -279,22 +302,10 @@ select_and_fit_lasso <- function(issue, survey_data) {
       if (bic_val < best_bic) {
         best_bic <- bic_val
         best_lambda <- lam
+        fit_best <- fit_l
       }
     }
   }
-
-  # Refit at best lambda
-  fit_best <- tryCatch(
-    glmmLasso(
-      fix = as.formula(paste("y ~ male +", paste(candidate_covs, collapse = " + "))),
-      rnd = list(state_code = ~1),
-      data = d,
-      lambda = best_lambda,
-      family = binomial(link = "logit"),
-      control = list(print.iter = FALSE)
-    ),
-    error = function(e) { message("  glmmLasso failed: ", e$message); NULL }
-  )
 
   if (is.null(fit_best)) return(NULL)
 
@@ -372,81 +383,98 @@ survey_2020_2021 <- survey |>
 message("Survey 2020-2021 vote data: ", nrow(survey_2020_2021), " obs, ",
         n_distinct(survey_2020_2021$respondent_id), " respondents")
 
-res_2yr   <- run_spec("baseline_2020_2021", use_inkar = FALSE, survey_data = survey_2020_2021)
-res_base  <- run_spec("baseline",           use_inkar = FALSE)
-res_inkar <- run_spec("baseline_inkar",     use_inkar = TRUE)
+res_2yr     <- run_spec("baseline_2020_2021",      use_inkar = FALSE, survey_data = survey_2020_2021)
+res_2yr_emp <- run_spec("baseline_2020_2021_emp",  use_inkar = FALSE, use_employed = TRUE, survey_data = survey_2020_2021)
+res_base    <- run_spec("baseline",                 use_inkar = FALSE)
+res_emp     <- run_spec("baseline_employed",        use_inkar = FALSE, use_employed = TRUE)
+res_inkar   <- run_spec("baseline_inkar",           use_inkar = TRUE)
 
-# glmmLasso spec (sequential — glmmLasso not compatible with future_lapply)
-message("\n=== lasso_select ===\n")
-lasso_results <- lapply(vote_issues, function(issue) {
-  message("  ", issue)
-  select_and_fit_lasso(issue, survey_2021)
-})
-names(lasso_results) <- vote_issues
+# glmmLasso specs (sequential — glmmLasso not compatible with future_lapply)
+run_lasso_spec <- function(spec_name, survey_data) {
+  message("\n=== ", spec_name, " ===\n")
+  lasso_results <- lapply(vote_issues, function(issue) {
+    message("  ", issue)
+    select_and_fit_lasso(issue, survey_data)
+  })
+  names(lasso_results) <- vote_issues
 
-successful_lasso <- names(compact(lasso_results))
-message(length(successful_lasso), " / ", length(vote_issues), " fitted")
+  successful <- names(compact(lasso_results))
+  message(length(successful), " / ", length(vote_issues), " fitted")
 
-# Report selected covariates per issue
-message("\nSelected covariates per issue:")
-for (issue in successful_lasso) {
-  sel <- lasso_results[[issue]]$selected
-  message("  ", issue, ": ", if (length(sel) == 0) "(none)" else paste(sel, collapse = ", "))
+  message("\nSelected covariates per issue:")
+  for (issue in successful) {
+    sel <- lasso_results[[issue]]$selected
+    message("  ", issue, ": ", if (length(sel) == 0) "(none)" else paste(sel, collapse = ", "))
+  }
+
+  mrp <- map_dfr(successful, ~ mutate(lasso_results[[.x]]$kreis, issue_id = .x)) |>
+    mutate(county_code = as.character(county_code))
+
+  val <- inner_join(mrp, btw21_long, by = c("county_code", "issue_id"))
+  if (n_distinct(val$county_code) < 100) {
+    val2 <- inner_join(
+      mrp |> mutate(county_code = str_pad(county_code, 5, pad = "0")),
+      btw21_long |> mutate(county_code = str_pad(county_code, 5, pad = "0")),
+      by = c("county_code", "issue_id"))
+    if (nrow(val2) > nrow(val)) val <- val2
+  }
+
+  metrics <- val |>
+    group_by(issue_id) |>
+    summarise(
+      n_counties  = n(),
+      r           = cor(estimate, actual, use = "complete.obs"),
+      rmse_pp     = sqrt(mean((estimate - actual)^2, na.rm = TRUE)) * 100,
+      bias_pp     = mean(estimate - actual, na.rm = TRUE) * 100,
+      mean_mrp    = mean(estimate, na.rm = TRUE) * 100,
+      mean_actual = mean(actual, na.rm = TRUE) * 100,
+      .groups     = "drop"
+    ) |>
+    mutate(party = party_labels[issue_id], spec = spec_name) |>
+    arrange(desc(r)) |>
+    select(spec, party, issue_id, n_counties, r, rmse_pp, bias_pp, mean_mrp, mean_actual)
+
+  list(metrics = metrics, val = val)
 }
 
-mrp_lasso <- map_dfr(successful_lasso, ~ mutate(lasso_results[[.x]]$kreis, issue_id = .x)) |>
-  mutate(county_code = as.character(county_code))
-
-val_lasso <- inner_join(mrp_lasso, btw21_long, by = c("county_code", "issue_id"))
-if (n_distinct(val_lasso$county_code) < 100) {
-  val2 <- inner_join(
-    mrp_lasso |> mutate(county_code = str_pad(county_code, 5, pad = "0")),
-    btw21_long |> mutate(county_code = str_pad(county_code, 5, pad = "0")),
-    by = c("county_code", "issue_id"))
-  if (nrow(val2) > nrow(val_lasso)) val_lasso <- val2
-}
-
-metrics_lasso <- val_lasso |>
-  group_by(issue_id) |>
-  summarise(
-    n_counties  = n(),
-    r           = cor(estimate, actual, use = "complete.obs"),
-    rmse_pp     = sqrt(mean((estimate - actual)^2, na.rm = TRUE)) * 100,
-    bias_pp     = mean(estimate - actual, na.rm = TRUE) * 100,
-    mean_mrp    = mean(estimate, na.rm = TRUE) * 100,
-    mean_actual = mean(actual, na.rm = TRUE) * 100,
-    .groups     = "drop"
-  ) |>
-  mutate(party = party_labels[issue_id], spec = "lasso_select") |>
-  arrange(desc(r)) |>
-  select(spec, party, issue_id, n_counties, r, rmse_pp, bias_pp, mean_mrp, mean_actual)
-
-res_lasso <- list(metrics = metrics_lasso, val = val_lasso)
+res_lasso     <- run_lasso_spec("lasso_select",          survey_2021)
+res_lasso_2yr <- run_lasso_spec("lasso_select_2020_2021", survey_2020_2021)
 
 # ---- 9. Print comparison -----------------------------------------------------
 
-combined <- bind_rows(res_2yr$metrics, res_base$metrics, res_inkar$metrics, res_lasso$metrics)
+combined <- bind_rows(res_2yr$metrics, res_2yr_emp$metrics, res_base$metrics,
+                      res_emp$metrics, res_inkar$metrics,
+                      res_lasso$metrics, res_lasso_2yr$metrics)
 
-all_specs <- c("baseline_2020_2021", "baseline", "baseline_inkar", "lasso_select")
-spec_short <- c(baseline_2020_2021 = "2020-21", baseline = "2021", baseline_inkar = "+INKAR", lasso_select = "LASSO")
+all_specs <- c("baseline_2020_2021", "baseline_2020_2021_emp",
+               "lasso_select_2020_2021",
+               "baseline", "baseline_employed", "baseline_inkar", "lasso_select")
 
-message("\n", strrep("=", 70))
+message("\n", strrep("=", 100))
 message("COMPARISON: all specs")
-message(strrep("=", 70))
-message(sprintf("\n%-12s  %s  %s  %s  %s",
-                "Party", "r(2020-21)", "r(2021)", "r(+INKAR)", "r(LASSO)"))
+message(strrep("=", 100))
+header <- sprintf("%-12s  %-8s  %-10s  %-10s  %-8s  %-8s  %-8s  %-8s",
+                  "Party", "20-21", "20-21+Emp", "20-21+LAS", "2021", "+Empl", "+INKAR", "LASSO")
+message("\n", header)
 for (p in sort(unique(combined$party))) {
   vals <- sapply(all_specs, function(s) {
     v <- combined$r[combined$party == p & combined$spec == s]
     if (length(v) == 1) sprintf("%.3f", v) else "  NA "
   })
-  message(sprintf("%-12s  %s      %s    %s      %s", p, vals[1], vals[2], vals[3], vals[4]))
+  message(sprintf("%-12s  %-8s  %-10s  %-10s  %-8s  %-8s  %-8s  %-8s",
+                  p, vals[1], vals[2], vals[3], vals[4], vals[5], vals[6], vals[7]))
 }
 
 meds <- sapply(all_specs, function(s) median(combined$r[combined$spec == s]))
 rmses <- sapply(all_specs, function(s) median(combined$rmse_pp[combined$spec == s]))
-message(sprintf("\n%-12s  %.3f      %.3f    %.3f      %.3f", "MEDIAN r", meds[1], meds[2], meds[3], meds[4]))
-message(sprintf("%-12s  %.1fpp      %.1fpp    %.1fpp      %.1fpp", "MEDIAN RMSE", rmses[1], rmses[2], rmses[3], rmses[4]))
+message(sprintf("\n%-12s  %-8.3f  %-10.3f  %-10.3f  %-8.3f  %-8.3f  %-8.3f  %-8.3f",
+                "MEDIAN r", meds[1], meds[2], meds[3], meds[4], meds[5], meds[6], meds[7]))
+message(sprintf("%-12s  %-8s  %-10s  %-10s  %-8s  %-8s  %-8s  %-8s",
+                "MEDIAN RMSE",
+                paste0(round(rmses[1],1),"pp"), paste0(round(rmses[2],1),"pp"),
+                paste0(round(rmses[3],1),"pp"), paste0(round(rmses[4],1),"pp"),
+                paste0(round(rmses[5],1),"pp"), paste0(round(rmses[6],1),"pp"),
+                paste0(round(rmses[7],1),"pp")))
 
 # ---- 10. Save outputs --------------------------------------------------------
 
@@ -455,22 +483,31 @@ message("\nSaved: ", file.path(output_dir, "vote_share_validation_2021only.csv")
 
 # Scatter plot: all specs
 spec_labels <- c(baseline_2020_2021 = "Baseline (2020-2021)",
+                 baseline_2020_2021_emp = "+ Employment (2020-2021)",
+                 lasso_select_2020_2021 = "LASSO-selected (2020-2021)",
                  baseline = "Baseline (2021 only)",
+                 baseline_employed = "+ Employment (2021)",
                  baseline_inkar = "All INKAR covariates",
-                 lasso_select = "LASSO-selected covariates")
+                 lasso_select = "LASSO-selected (2021)")
 
 scatter_data <- bind_rows(
-  res_2yr$val   |> mutate(spec = "Baseline (2020-2021)"),
-  res_base$val  |> mutate(spec = "Baseline (2021 only)"),
-  res_inkar$val |> mutate(spec = "All INKAR covariates"),
-  res_lasso$val |> mutate(spec = "LASSO-selected covariates")
+  res_2yr$val      |> mutate(spec = "Baseline (2020-2021)"),
+  res_2yr_emp$val  |> mutate(spec = "+ Employment (2020-2021)"),
+  res_lasso_2yr$val|> mutate(spec = "LASSO-selected (2020-2021)"),
+  res_base$val     |> mutate(spec = "Baseline (2021 only)"),
+  res_emp$val      |> mutate(spec = "+ Employment (2021)"),
+  res_inkar$val    |> mutate(spec = "All INKAR covariates"),
+  res_lasso$val    |> mutate(spec = "LASSO-selected (2021)")
 ) |>
   mutate(estimate_pct = estimate * 100, actual_pct = actual * 100,
          party = party_labels[issue_id],
          spec = factor(spec, levels = c("Baseline (2020-2021)",
+                                         "+ Employment (2020-2021)",
+                                         "LASSO-selected (2020-2021)",
                                          "Baseline (2021 only)",
+                                         "+ Employment (2021)",
                                          "All INKAR covariates",
-                                         "LASSO-selected covariates")))
+                                         "LASSO-selected (2021)")))
 
 label_data <- combined |>
   mutate(party = party_labels[issue_id],
@@ -493,5 +530,5 @@ p <- ggplot(scatter_data, aes(x = actual_pct, y = estimate_pct)) +
   theme(strip.text = element_text(face = "bold"))
 
 ggsave(file.path(output_dir, "vote_share_scatter_2021only.pdf"),
-       p, width = 14, height = 11)
+       p, width = 14, height = 17)
 message("Saved: ", file.path(output_dir, "vote_share_scatter_2021only.pdf"))
