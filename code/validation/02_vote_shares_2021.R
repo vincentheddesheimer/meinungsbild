@@ -179,11 +179,11 @@ party_labels <- c(vote_cdu = "CDU/CSU", vote_spd = "SPD", vote_gruene = "Grüne"
 
 # ---- 6. Helper: run a spec and validate --------------------------------------
 
-run_spec <- function(spec_name, use_inkar) {
+run_spec <- function(spec_name, use_inkar, survey_data = survey_2021) {
   message("\n=== ", spec_name, " ===\n")
 
   results <- future_lapply(vote_issues, function(issue) {
-    fit_and_poststratify_kreis(issue, survey_2021, use_inkar = use_inkar)
+    fit_and_poststratify_kreis(issue, survey_data, use_inkar = use_inkar)
   }, future.seed = TRUE)
   names(results) <- vote_issues
 
@@ -364,10 +364,17 @@ select_and_fit_lasso <- function(issue, survey_data) {
   list(kreis = est_kreis, selected = selected, lambda = best_lambda)
 }
 
-# ---- 8. Run all three specs --------------------------------------------------
+# ---- 8. Run all specs --------------------------------------------------------
 
-res_base  <- run_spec("baseline",       use_inkar = FALSE)
-res_inkar <- run_spec("baseline_inkar", use_inkar = TRUE)
+# 2020-2021 window (more data, slight temporal mismatch)
+survey_2020_2021 <- survey |>
+  filter(year %in% 2020:2021, issue_id %in% vote_issues)
+message("Survey 2020-2021 vote data: ", nrow(survey_2020_2021), " obs, ",
+        n_distinct(survey_2020_2021$respondent_id), " respondents")
+
+res_2yr   <- run_spec("baseline_2020_2021", use_inkar = FALSE, survey_data = survey_2020_2021)
+res_base  <- run_spec("baseline",           use_inkar = FALSE)
+res_inkar <- run_spec("baseline_inkar",     use_inkar = TRUE)
 
 # glmmLasso spec (sequential — glmmLasso not compatible with future_lapply)
 message("\n=== lasso_select ===\n")
@@ -418,50 +425,50 @@ res_lasso <- list(metrics = metrics_lasso, val = val_lasso)
 
 # ---- 9. Print comparison -----------------------------------------------------
 
-combined <- bind_rows(res_base$metrics, res_inkar$metrics, res_lasso$metrics)
+combined <- bind_rows(res_2yr$metrics, res_base$metrics, res_inkar$metrics, res_lasso$metrics)
+
+all_specs <- c("baseline_2020_2021", "baseline", "baseline_inkar", "lasso_select")
+spec_short <- c(baseline_2020_2021 = "2020-21", baseline = "2021", baseline_inkar = "+INKAR", lasso_select = "LASSO")
 
 message("\n", strrep("=", 70))
-message("COMPARISON: baseline vs. +INKAR vs. LASSO-selected")
+message("COMPARISON: all specs")
 message(strrep("=", 70))
-message(sprintf("\n%-12s  %s  %s  %s",
-                "Party", "r(base)", "r(+INKAR)", "r(LASSO)"))
+message(sprintf("\n%-12s  %s  %s  %s  %s",
+                "Party", "r(2020-21)", "r(2021)", "r(+INKAR)", "r(LASSO)"))
 for (p in sort(unique(combined$party))) {
-  r_b <- combined$r[combined$party == p & combined$spec == "baseline"]
-  r_i <- combined$r[combined$party == p & combined$spec == "baseline_inkar"]
-  r_l <- combined$r[combined$party == p & combined$spec == "lasso_select"]
-  if (length(r_b) == 1 && length(r_i) == 1 && length(r_l) == 1) {
-    message(sprintf("%-12s  %.3f    %.3f      %.3f", p, r_b, r_i, r_l))
-  }
+  vals <- sapply(all_specs, function(s) {
+    v <- combined$r[combined$party == p & combined$spec == s]
+    if (length(v) == 1) sprintf("%.3f", v) else "  NA "
+  })
+  message(sprintf("%-12s  %s      %s    %s      %s", p, vals[1], vals[2], vals[3], vals[4]))
 }
 
-med_b <- median(res_base$metrics$r)
-med_i <- median(res_inkar$metrics$r)
-med_l <- median(res_lasso$metrics$r)
-message(sprintf("\n%-12s  %.3f    %.3f      %.3f", "MEDIAN", med_b, med_i, med_l))
-
-med_rmse_b <- median(res_base$metrics$rmse_pp)
-med_rmse_i <- median(res_inkar$metrics$rmse_pp)
-med_rmse_l <- median(res_lasso$metrics$rmse_pp)
-message(sprintf("%-12s  %.1fpp    %.1fpp      %.1fpp", "MEDIAN RMSE", med_rmse_b, med_rmse_i, med_rmse_l))
+meds <- sapply(all_specs, function(s) median(combined$r[combined$spec == s]))
+rmses <- sapply(all_specs, function(s) median(combined$rmse_pp[combined$spec == s]))
+message(sprintf("\n%-12s  %.3f      %.3f    %.3f      %.3f", "MEDIAN r", meds[1], meds[2], meds[3], meds[4]))
+message(sprintf("%-12s  %.1fpp      %.1fpp    %.1fpp      %.1fpp", "MEDIAN RMSE", rmses[1], rmses[2], rmses[3], rmses[4]))
 
 # ---- 10. Save outputs --------------------------------------------------------
 
 write_csv(combined, file.path(output_dir, "vote_share_validation_2021only.csv"))
 message("\nSaved: ", file.path(output_dir, "vote_share_validation_2021only.csv"))
 
-# Scatter plot: all three specs
-spec_labels <- c(baseline = "Baseline (pop density only)",
+# Scatter plot: all specs
+spec_labels <- c(baseline_2020_2021 = "Baseline (2020-2021)",
+                 baseline = "Baseline (2021 only)",
                  baseline_inkar = "All INKAR covariates",
                  lasso_select = "LASSO-selected covariates")
 
 scatter_data <- bind_rows(
-  res_base$val |> mutate(spec = "Baseline (pop density only)"),
+  res_2yr$val   |> mutate(spec = "Baseline (2020-2021)"),
+  res_base$val  |> mutate(spec = "Baseline (2021 only)"),
   res_inkar$val |> mutate(spec = "All INKAR covariates"),
   res_lasso$val |> mutate(spec = "LASSO-selected covariates")
 ) |>
   mutate(estimate_pct = estimate * 100, actual_pct = actual * 100,
          party = party_labels[issue_id],
-         spec = factor(spec, levels = c("Baseline (pop density only)",
+         spec = factor(spec, levels = c("Baseline (2020-2021)",
+                                         "Baseline (2021 only)",
                                          "All INKAR covariates",
                                          "LASSO-selected covariates")))
 
@@ -481,10 +488,10 @@ p <- ggplot(scatter_data, aes(x = actual_pct, y = estimate_pct)) +
             inherit.aes = FALSE) +
   labs(x = "Actual vote share (BTW 2021, %)",
        y = "MRP predicted vote share (%)",
-       title = "MRP vote share validation (2021 only): baseline vs. INKAR vs. LASSO") +
+       title = "MRP vote share validation: year window, covariates, and selection compared") +
   theme_minimal(base_size = 9) +
   theme(strip.text = element_text(face = "bold"))
 
 ggsave(file.path(output_dir, "vote_share_scatter_2021only.pdf"),
-       p, width = 14, height = 9)
+       p, width = 14, height = 11)
 message("Saved: ", file.path(output_dir, "vote_share_scatter_2021only.pdf"))

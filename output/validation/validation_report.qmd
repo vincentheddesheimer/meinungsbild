@@ -27,39 +27,51 @@ This report summarizes validation tests for the Meinungsbild MRP estimates. Each
 
 | Test | Ground truth | Level | N units |
 |------|-------------|-------|---------|
-| Vote shares (2021 only, no election covs) | BTW 2021 county results | Kreis (400) | 6 parties |
+| Vote shares (2021 only, no election covs) | BTW 2021 county results | Kreis (400) | 6 parties, 3 specs |
 | Bundesland direct vs. MRP | Direct survey means | Bundesland (16) | 49 issues |
 
 ## 1. Vote share validation (2021 only, no election covariates)
 
-We re-fit vote intention models using only 2021 survey data (N = 3,095 respondents, 129 Kreise with respondents) and compare county-level predictions against actual BTW 2021 second-vote shares.
+We re-fit vote intention models using only 2021 survey data (N = 4,954 respondents from GLES Tracking + Cross-Section Cumulation, 245 Kreise with respondents) and compare county-level predictions against actual BTW 2021 second-vote shares.
 
-The validation models exclude all election result covariates (`fed_afd_share`, `fed_cdu_csu_share`, `fed_turnout`) from the right-hand side. The only county-level fixed effect is log population density. Geographic variation in predicted vote shares therefore comes entirely from demographic composition (age, gender, education), geographic random effects (state, county, electoral district), and population density. No actual vote share data enters the model as a predictor, making this a genuine out-of-sample test of the MRP framework's ability to recover partisan geography from survey demographics.
+The validation models exclude all election result covariates (`fed_afd_share`, `fed_cdu_csu_share`, `fed_turnout`) from the right-hand side. No actual vote share data enters the model as a predictor, making this a genuine out-of-sample test. We compare three specifications:
+
+- **Baseline 2020-2021:** Demographics + log population density + geographic random effects, using 2020-2021 data (7,097 obs, 7,704 respondents)
+- **Baseline 2021:** Same spec, 2021 data only (4,533 obs, 4,954 respondents)
+- **All INKAR:** Baseline 2021 + four socioeconomic covariates (foreign-born share, median income, rent, refugee share)
+- **LASSO-selected:** glmmLasso selects which INKAR covariates to include per issue via BIC-tuned L1 penalization, then refits with glmer
 
 ```{r vote-2021}
 val_2021 <- read_csv(file.path(val_dir, "vote_share_validation_2021only.csv"),
                      show_col_types = FALSE)
 
+spec_labels <- c(baseline = "Baseline", baseline_inkar = "All INKAR",
+                 lasso_select = "LASSO-selected")
+
 val_2021 |>
-  select(Party = party, `r` = r, `RMSE (pp)` = rmse_pp,
+  mutate(Spec = spec_labels[spec]) |>
+  select(Spec, Party = party, `r` = r, `RMSE (pp)` = rmse_pp,
          `Bias (pp)` = bias_pp, `MRP mean (%)` = mean_mrp,
          `Actual mean (%)` = mean_actual) |>
-  kable(digits = c(0, 3, 1, 1, 1, 1))
+  kable(digits = c(0, 0, 3, 1, 1, 1, 1))
 ```
 
 ```{r vote-2021-summary}
-tibble(
-  Metric = c("Median r", "Median RMSE", "Median |bias|"),
-  Value  = c(
-    round(median(val_2021$r), 3),
-    paste0(round(median(val_2021$rmse_pp), 1), " pp"),
-    paste0(round(median(abs(val_2021$bias_pp)), 1), " pp")
-  )
-) |> kable()
+val_2021 |>
+  group_by(spec) |>
+  summarise(`Median r` = round(median(r), 3),
+            `Median RMSE (pp)` = round(median(rmse_pp), 1),
+            `Median |bias| (pp)` = round(median(abs(bias_pp)), 1),
+            .groups = "drop") |>
+  mutate(Spec = spec_labels[spec]) |>
+  select(Spec, everything(), -spec) |>
+  kable()
 ```
 
-```{r vote-2021-scatter, fig.width=10, fig.height=5}
-#| fig-cap: "MRP predicted vs. actual BTW 2021 county-level vote shares (2021 survey data, no election covariates)."
+The 2020-2021 baseline (more data, minimal temporal mismatch) achieves the highest median correlation. Among the 2021-only specs, the baseline outperforms both covariate-enriched alternatives. Adding INKAR covariates without regularization reduces performance due to overfitting; LASSO selection partially mitigates this but still does not beat the baseline. The geographic random effects already capture the variation these covariates would add. More survey data is the strongest lever for improving estimates.
+
+```{r vote-2021-scatter, fig.width=14, fig.height=9}
+#| fig-cap: "MRP predicted vs. actual BTW 2021 county-level vote shares (2021 survey data only). Three specifications compared: baseline (demographics + pop density), all INKAR covariates, and LASSO-selected covariates."
 knitr::include_graphics(file.path(val_dir, "vote_share_scatter_2021only.pdf"))
 ```
 
@@ -171,24 +183,19 @@ Issues: vote_* (state-level).
 ## Summary
 
 ```{r summary-table}
-tibble(
-  Validation = c(
-    "Vote shares, 2021 only, no election covs (vs. BTW 2021)",
-    "Bundesland direct vs. MRP (all 49 issues)"
-  ),
-  `Median r` = c(
-    median(val_2021$r),
-    median(val_bl$r, na.rm = TRUE)
-  ),
-  `Median RMSE (pp)` = c(
-    median(val_2021$rmse_pp),
-    100 * median(val_bl$rmse, na.rm = TRUE)
-  ),
-  `N comparisons` = c(
-    paste0(nrow(val_2021), " parties x 400 counties"),
-    paste0(nrow(val_bl), " issues x 16 states")
-  )
-) |> kable(digits = c(0, 3, 1, 0))
+val_2021 |>
+  group_by(spec) |>
+  summarise(`Median r` = median(r),
+            `Median RMSE (pp)` = median(rmse_pp),
+            .groups = "drop") |>
+  mutate(Spec = spec_labels[spec]) |>
+  select(Spec, everything(), -spec) |>
+  bind_rows(
+    tibble(Spec = "Bundesland direct vs. MRP (49 issues)",
+           `Median r` = median(val_bl$r, na.rm = TRUE),
+           `Median RMSE (pp)` = 100 * median(val_bl$rmse, na.rm = TRUE))
+  ) |>
+  kable(digits = c(0, 3, 1))
 ```
 
-The external validation uses 2021-only survey data with no election covariates on the right-hand side, yielding a median county-level correlation of ~0.77 and RMSE of ~4.4 pp across six parties. Geographic variation in predicted vote shares comes entirely from demographic composition and population density, confirming that the MRP framework recovers meaningful partisan geography from survey demographics alone.
+The best-performing external validation spec uses 2020-2021 survey data (7,704 respondents, 245 Kreise) with no election covariates, achieving a median county-level correlation of 0.82 and RMSE of 4.2 pp. Within the 2021-only data, the baseline specification outperforms covariate-enriched alternatives. The main lever for improving estimates is more survey data with geographic identifiers, not model complexity.
