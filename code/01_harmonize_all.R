@@ -219,6 +219,12 @@ extract_tracking <- function() {
   out$birth_year <- NULL
   out$age_cat <- cut_age(out$age)
 
+  # Employment: s0013_* (4 wave versions). 1=full-time, 2=part-time → employed; rest → not
+  emp_raw <- coalesce(as_num(d$s0013_4), as_num(d$s0013_3),
+                      as_num(d$s0013_2), as_num(d$s0013_1))
+  out$employed <- as.integer(emp_raw %in% c(1, 2))
+  out$employed[is.na(emp_raw) | emp_raw < 0] <- NA_integer_
+
   # Weights: use the MZ-based weight with time-droppers (most inclusive)
   out$weight <- coalesce(as_num(d$t0003_1), as_num(d$t0003_2))
 
@@ -275,6 +281,11 @@ extract_cross2025 <- function() {
 
   out$age_cat <- cut_age(out$age)
 
+  # Employment: d9. 1=full-time, 2=part-time, 13=minijob → employed; rest → not
+  emp_raw <- as_num(d$d9)
+  out$employed <- as.integer(emp_raw %in% c(1, 2, 13))
+  out$employed[is.na(emp_raw) | emp_raw < 0] <- NA_integer_
+
   # Issue variables
   conc_c <- concordance |> filter(dataset == "ZA10100_cross2025")
   for (i in seq_len(nrow(conc_c))) {
@@ -324,6 +335,11 @@ extract_rcs2025 <- function() {
   }
 
   out$age_cat <- cut_age(out$age)
+
+  # Employment: sup024. Same coding as Cross 2025
+  emp_raw <- as_num(d$sup024)
+  out$employed <- as.integer(emp_raw %in% c(1, 2, 13))
+  out$employed[is.na(emp_raw) | emp_raw < 0] <- NA_integer_
 
   # Issue variables
   conc_r <- concordance |> filter(dataset == "ZA10101_rcs2025")
@@ -381,6 +397,11 @@ extract_cross_cum <- function() {
   }
 
   out$age_cat <- cut_age(out$age)
+
+  # Employment: d27. 1=full-time, 2=part-time → employed; rest → not
+  emp_raw <- as_num(d$d27)
+  out$employed <- as.integer(emp_raw %in% c(1, 2))
+  out$employed[is.na(emp_raw) | emp_raw < 0] <- NA_integer_
 
   # Issue variables
   conc_cc <- concordance |> filter(dataset == "ZA6835_cross_cum0921")
@@ -470,6 +491,11 @@ extract_allbus <- function() {
 
   out$age_cat <- cut_age(out$age)
 
+  # Employment: v181. 1=full-time, 2=part-time → employed; rest → not
+  emp_raw <- as_num(d$v181)
+  out$employed <- as.integer(emp_raw %in% c(1, 2))
+  out$employed[is.na(emp_raw) | emp_raw < 0] <- NA_integer_
+
   # Issue variables
   conc_a <- concordance |> filter(dataset == "ZA8974_allbus")
   for (i in seq_len(nrow(conc_a))) {
@@ -515,13 +541,13 @@ for (nm in names(datasets)) {
 
 # Ensure all datasets have the same core columns before binding
 core_cols <- c("respondent_id", "survey_source", "year", "state_code", "east",
-               "male", "age", "age_cat", "educ", "wkr_nr", "wkr_phase_year",
-               "weight")
+               "male", "age", "age_cat", "educ", "employed", "wkr_nr",
+               "wkr_phase_year", "weight")
 
 ensure_cols <- function(df) {
   for (col in core_cols) {
     if (!col %in% names(df)) {
-      if (col %in% c("wkr_nr", "wkr_phase_year")) {
+      if (col %in% c("wkr_nr", "wkr_phase_year", "employed")) {
         df[[col]] <- NA_integer_
       } else if (col %in% c("weight")) {
         df[[col]] <- 1
@@ -678,7 +704,7 @@ respondent_data <- survey_wide |>
   mutate(row_idx = row_number()) |>
   select(row_idx, respondent_id, survey_source, dataset_name,
          year, legperiod, state_code, east, county_code, wkr_nr,
-         male, age, age_cat, educ, educ_label, weight)
+         male, age, age_cat, educ, educ_label, employed, weight)
 
 survey_long <- long_outcomes |>
   left_join(respondent_data, by = "row_idx") |>
