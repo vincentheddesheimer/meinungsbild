@@ -58,12 +58,30 @@ pred_kreis <- poststrat |>
             by = "county_code") |>
   mutate(male = as.integer(male), wkr_nr = NA_character_)
 
-# WKR-level poststrat
-poststrat_wkr <- poststrat |>
+# WKR-level poststrat (non-Berlin: county crosswalk; Berlin: Bezirk-level demographics)
+poststrat_wkr_base <- poststrat |>
   inner_join(wkr_cw, by = "county_code", relationship = "many-to-many") |>
   mutate(N_wkr = N * pct_area) |>
   group_by(wkr_nr, age_cat, male, educ_label) |>
   summarise(N = sum(N_wkr, na.rm = TRUE), .groups = "drop")
+
+# Replace Berlin WKRs (75-86) with Bezirk-level demographics from Zensus + EWR
+berlin_wkr_file <- file.path(mb_root, "data", "poststrat", "poststrat_wkr_berlin.rds")
+if (file.exists(berlin_wkr_file)) {
+  poststrat_wkr_berlin <- readRDS(berlin_wkr_file) |>
+    mutate(age_cat = factor(age_cat, levels = levels(poststrat_wkr_base$age_cat)),
+           educ_label = factor(educ_label, levels = levels(poststrat_wkr_base$educ_label)))
+  berlin_wkr_nrs <- unique(poststrat_wkr_berlin$wkr_nr)
+  poststrat_wkr <- bind_rows(
+    poststrat_wkr_base |> filter(!(wkr_nr %in% berlin_wkr_nrs)),
+    poststrat_wkr_berlin |> select(wkr_nr, age_cat, male, educ_label, N)
+  )
+  message("  Berlin WKRs (", paste(range(berlin_wkr_nrs), collapse="-"),
+          "): using Bezirk-level demographics from Zensus 2022")
+} else {
+  poststrat_wkr <- poststrat_wkr_base
+  message("  NOTE: poststrat_wkr_berlin.rds not found — Berlin WKRs use county-level demographics")
+}
 
 # WKR-level covariates (pop-weighted average of constituent Kreise)
 wkr_covs <- wkr_cw |>

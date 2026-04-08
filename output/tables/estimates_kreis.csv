@@ -1165,7 +1165,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 14730,0.3742,156279,climate_ego,NA,14,Sachsen
 15001,0.4406,57237,climate_ego,NA,15,Sachsen-Anhalt
 15002,0.4912,180650,climate_ego,NA,15,Sachsen-Anhalt
-15003,0.467,195180,climate_ego,NA,15,Sachsen-Anhalt
+15003,0.4671,195180,climate_ego,NA,15,Sachsen-Anhalt
 15081,0.4318,60540,climate_ego,NA,15,Sachsen-Anhalt
 15082,0.3945,124749,climate_ego,NA,15,Sachsen-Anhalt
 15083,0.3986,132660,climate_ego,NA,15,Sachsen-Anhalt
@@ -4669,7 +4669,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 09461,0.7478,54040,same_sex_marriage,NA,09,Bayern
 09462,0.7369,54629,same_sex_marriage,NA,09,Bayern
 09463,0.7358,27920,same_sex_marriage,NA,09,Bayern
-09464,0.6967,30660,same_sex_marriage,NA,09,Bayern
+09464,0.6968,30660,same_sex_marriage,NA,09,Bayern
 09471,0.6664,113050,same_sex_marriage,NA,09,Bayern
 09472,0.6758,80409,same_sex_marriage,NA,09,Bayern
 09473,0.688,63420,same_sex_marriage,NA,09,Bayern
@@ -7341,7 +7341,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 06634,0.3008,140610,econ_current_national,NA,06,Hessen
 06635,0.2976,120687,econ_current_national,NA,06,Hessen
 06636,0.2893,73670,econ_current_national,NA,06,Hessen
-07111,0.2845,88360,econ_current_national,NA,07,Rheinland-Pfalz
+07111,0.2846,88360,econ_current_national,NA,07,Rheinland-Pfalz
 07131,0.2789,101120,econ_current_national,NA,07,Rheinland-Pfalz
 07132,0.2653,102459,econ_current_national,NA,07,Rheinland-Pfalz
 07133,0.2706,130140,econ_current_national,NA,07,Rheinland-Pfalz
@@ -7793,7 +7793,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 08211,0.1684,39410,econ_retro_personal,NA,08,Baden-Württemberg
 08212,0.1976,250818,econ_retro_personal,NA,08,Baden-Württemberg
 08215,0.1678,360119,econ_retro_personal,NA,08,Baden-Württemberg
-08216,0.1611,183560,econ_retro_personal,NA,08,Baden-Württemberg
+08216,0.1612,183560,econ_retro_personal,NA,08,Baden-Württemberg
 08221,0.2172,122388,econ_retro_personal,NA,08,Baden-Württemberg
 08222,0.1857,254158,econ_retro_personal,NA,08,Baden-Württemberg
 08225,0.1577,112068,econ_retro_personal,NA,08,Baden-Württemberg
@@ -7973,7 +7973,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 15085,0.1419,168599,econ_retro_personal,NA,15,Sachsen-Anhalt
 15086,0.1409,66818,econ_retro_personal,NA,15,Sachsen-Anhalt
 15087,0.1334,105699,econ_retro_personal,NA,15,Sachsen-Anhalt
-15088,0.1443,145559,econ_retro_personal,NA,15,Sachsen-Anhalt
+15088,0.1444,145559,econ_retro_personal,NA,15,Sachsen-Anhalt
 15089,0.137,148968,econ_retro_personal,NA,15,Sachsen-Anhalt
 15090,0.1409,82319,econ_retro_personal,NA,15,Sachsen-Anhalt
 15091,0.1396,97760,econ_retro_personal,NA,15,Sachsen-Anhalt
@@ -9262,7 +9262,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 03462,0.3186,40450,political_interest,NA,03,Niedersachsen
 04011,0.3781,459569,political_interest,NA,04,Bremen
 04012,0.3244,91190,political_interest,NA,04,Bremen
-05111,0.3823,494379,political_interest,NA,05,Nordrhein-Westfalen
+05111,0.3822,494379,political_interest,NA,05,Nordrhein-Westfalen
 05112,0.3306,396399,political_interest,NA,05,Nordrhein-Westfalen
 05113,0.3583,456090,political_interest,NA,05,Nordrhein-Westfalen
 05114,0.3458,183150,political_interest,NA,05,Nordrhein-Westfalen
@@ -13340,7 +13340,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 06633,0.6013,183390,rent_control,NA,06,Hessen
 06634,0.5997,140610,rent_control,NA,06,Hessen
 06635,0.6012,120687,rent_control,NA,06,Hessen
-06636,0.601,73670,rent_control,NA,06,Hessen
+06636,0.6009,73670,rent_control,NA,06,Hessen
 07111,0.6224,88360,rent_control,NA,07,Rheinland-Pfalz
 07131,0.6062,101120,rent_control,NA,07,Rheinland-Pfalz
 07132,0.6128,102459,rent_control,NA,07,Rheinland-Pfalz
@@ -13415,7 +13415,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 08415,0.5704,229939,rent_control,NA,08,Baden-Württemberg
 08416,0.5733,181630,rent_control,NA,08,Baden-Württemberg
 08417,0.5685,153178,rent_control,NA,08,Baden-Württemberg
-08421,0.5847,99258,rent_control,NA,08,Baden-Württemberg
+08421,0.5846,99258,rent_control,NA,08,Baden-Württemberg
 08425,0.564,154629,rent_control,NA,08,Baden-Württemberg
 08426,0.565,157609,rent_control,NA,08,Baden-Württemberg
 08435,0.563,173740,rent_control,NA,08,Baden-Württemberg
@@ -13871,7 +13871,7 @@ county_code,estimate,pop,issue_id,county_name,state_code,state_name
 09463,0.4941,27920,speed_limit,NA,09,Bayern
 09464,0.462,30660,speed_limit,NA,09,Bayern
 09471,0.4636,113050,speed_limit,NA,09,Bayern
-09472,0.4754,80409,speed_limit,NA,09,Bayern
+09472,0.4755,80409,speed_limit,NA,09,Bayern
 09473,0.4761,63420,speed_limit,NA,09,Bayern
 09474,0.482,89790,speed_limit,NA,09,Bayern
 09475,0.4762,71418,speed_limit,NA,09,Bayern
