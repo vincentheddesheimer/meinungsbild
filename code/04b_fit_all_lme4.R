@@ -3,10 +3,11 @@
 ## to Kreis (county), Bundesland (state), and Wahlkreis (electoral district).
 ##
 ## Model specification (per issue):
-##   y ~ male +
+##   y ~ male + employed +
 ##       fed_afd_share_z + fed_cdu_share_z + fed_turnout_z + log_pop_density_z +
 ##       (1 | age_cat) + (1 | educ_label) +
 ##       (1 | educ_label:age_cat) + (1 | male:age_cat) + (1 | male:educ_label) +
+##       (1 | employed:age_cat) +
 ##       (1 | survey_source) + (1 | legperiod) +
 ##       (1 | state_code) + (1 | county_code) + (1 | wkr_nr)
 ##
@@ -62,13 +63,13 @@ pred_kreis <- poststrat |>
   left_join(kreis_cov_std |> select(county_code, fed_afd_share_z, fed_cdu_share_z,
                                      fed_turnout_z, log_pop_density_z),
             by = "county_code") |>
-  mutate(male = as.integer(male), wkr_nr = NA_character_)
+  mutate(male = as.integer(male), employed = as.integer(employed), wkr_nr = NA_character_)
 
 # WKR-level poststrat (non-Berlin: county crosswalk; Berlin: Bezirk-level demographics)
 poststrat_wkr_base <- poststrat |>
   inner_join(wkr_cw, by = "county_code", relationship = "many-to-many") |>
   mutate(N_wkr = N * pct_area) |>
-  group_by(wkr_nr, age_cat, male, educ_label) |>
+  group_by(wkr_nr, age_cat, male, educ_label, employed) |>
   summarise(N = sum(N_wkr, na.rm = TRUE), .groups = "drop")
 
 # Replace Berlin WKRs (75-86) with Bezirk-level demographics from Zensus + EWR
@@ -78,9 +79,29 @@ if (file.exists(berlin_wkr_file)) {
     mutate(age_cat = factor(age_cat, levels = levels(poststrat_wkr_base$age_cat)),
            educ_label = factor(educ_label, levels = levels(poststrat_wkr_base$educ_label)))
   berlin_wkr_nrs <- unique(poststrat_wkr_berlin$wkr_nr)
+
+  # Berlin Bezirk file may not yet have employed column — if missing, expand it
+  if (!"employed" %in% names(poststrat_wkr_berlin)) {
+    # Use Berlin county (11000) employment shares from main poststrat to split
+    berlin_emp <- poststrat |>
+      filter(state_code == "11") |>
+      group_by(age_cat, male, educ_label, employed) |>
+      summarise(N_emp = sum(N), .groups = "drop") |>
+      group_by(age_cat, male, educ_label) |>
+      mutate(emp_share = N_emp / sum(N_emp)) |>
+      ungroup() |>
+      select(age_cat, male, educ_label, employed, emp_share)
+
+    poststrat_wkr_berlin <- poststrat_wkr_berlin |>
+      left_join(berlin_emp, by = c("age_cat", "male", "educ_label"),
+                relationship = "many-to-many") |>
+      mutate(N = round(N * emp_share)) |>
+      select(-emp_share)
+  }
+
   poststrat_wkr <- bind_rows(
     poststrat_wkr_base |> filter(!(wkr_nr %in% berlin_wkr_nrs)),
-    poststrat_wkr_berlin |> select(wkr_nr, age_cat, male, educ_label, N)
+    poststrat_wkr_berlin |> select(wkr_nr, age_cat, male, educ_label, employed, N)
   )
   message("  Berlin WKRs (", paste(range(berlin_wkr_nrs), collapse="-"),
           "): using Bezirk-level demographics from Zensus 2022")
@@ -104,6 +125,7 @@ pred_wkr <- poststrat_wkr |>
   left_join(wkr_covs, by = "wkr_nr") |>
   mutate(
     male = as.integer(male),
+    employed = as.integer(employed),
     county_code = NA_character_,
     state_code = NA_character_
   )
@@ -113,7 +135,7 @@ pred_wkr <- poststrat_wkr |>
 fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df, conc_df) {
   d <- survey_data |>
     filter(issue_id == !!issue) |>
-    drop_na(y, age_cat, male, educ_label, state_code)
+    drop_na(y, age_cat, male, educ_label, employed, state_code)
 
   # Skip continuous outcomes (lr_self)
   if (any(conc_df$binary_rule[conc_df$issue_id == issue] == "continuous", na.rm = TRUE)) {
@@ -134,6 +156,7 @@ fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df,
     mutate(
       across(c(fed_afd_share_z, fed_cdu_share_z, fed_turnout_z, log_pop_density_z),
              ~ replace_na(.x, 0)),
+      employed   = as.integer(employed),
       age_cat    = factor(age_cat, levels = c("18-29","30-44","45-59","60-74","75+")),
       educ_label = factor(educ_label, levels = c("no_degree","hauptschule","realschule",
                                                   "abitur","university")),
@@ -159,8 +182,8 @@ fit_and_poststratify <- function(issue, survey_data, pred_kreis_df, pred_wkr_df,
   n_states  <- nlevels(d$state_code)
 
   # Build formula adaptively — only add RE when > 1 level observed
-  fe <- "y ~ male + fed_afd_share_z + fed_cdu_share_z + fed_turnout_z + log_pop_density_z"
-  re <- "(1 | age_cat) + (1 | educ_label) + (1 | educ_label:age_cat) + (1 | male:age_cat) + (1 | male:educ_label)"
+  fe <- "y ~ male + employed + fed_afd_share_z + fed_cdu_share_z + fed_turnout_z + log_pop_density_z"
+  re <- "(1 | age_cat) + (1 | educ_label) + (1 | educ_label:age_cat) + (1 | male:age_cat) + (1 | male:educ_label) + (1 | employed:age_cat)"
 
   if (n_sources > 1) re <- paste0(re, " + (1 | survey_source)")
   if (n_legper > 1)  re <- paste0(re, " + (1 | legperiod)")

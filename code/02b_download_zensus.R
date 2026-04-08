@@ -1,211 +1,117 @@
 ## 02b_download_zensus.R
-## Parse Zensus 2022 table 2000S-3044 (Age × Gender × Schulabschluss at Kreis level)
-## and build the actual poststratification frame.
+## Parse Zensus 2022 tables and build the poststratification frame.
 ##
-## Input:  data/raw/zensus/2000S-3044_de.csv (manually downloaded from
-##         ergebnisse.zensus2022.de/datenbank/online)
-## Output: data/poststrat/poststrat_kreis.rds
+## Input:  data/raw/zensus/2000S-4020_flat/2000S-4020_de_flat.csv
+##         (Age × Gender × Erwerbsstatus × Schulabschluss at Kreis level,
+##          flat format from ergebnisse.zensus2022.de)
+## Output: data/poststrat/poststrat_kreis.rds      (100 cells/county: 5 age × 2 gender × 5 educ × 2 employed)
 ##         data/poststrat/poststrat_bundesland.rds
 
 library(tidyverse)
 
+set.seed(20260408)
+
 mb_root <- here::here()
 
-zensus_path <- file.path(mb_root, "data", "raw", "zensus", "2000S-3044_de.csv")
+zensus_path <- file.path(mb_root, "data", "raw", "zensus",
+                         "2000S-4020_flat", "2000S-4020_de_flat.csv")
 stopifnot(file.exists(zensus_path))
 
-# ---- 1. Parse the GENESIS wide-format CSV ----------------------------------
+# ---- 1. Read flat-format CSV ------------------------------------------------
 
-# Read raw lines
-raw_lines <- readLines(zensus_path, encoding = "UTF-8")
+d <- read_delim(zensus_path, delim = ";", show_col_types = FALSE)
+message("Read ", nrow(d), " rows from Zensus 4020 flat file")
 
-# Header row 4 (1-indexed) contains Kreis codes: "01001 Flensburg, Stadt" etc.
-header_line <- raw_lines[4]
-header_fields <- str_split(header_line, ";")[[1]]
+# ---- 2. Mappings ------------------------------------------------------------
 
-# First 4 fields are empty (row labels: date, age, gender, education)
-# Then alternating: Kreis_name, Kreis_name (value column, quality flag column)
-kreis_fields <- header_fields[5:length(header_fields)]
-# Extract county codes (first 5 characters) from odd-numbered positions (value columns)
-value_positions <- seq(1, length(kreis_fields), by = 2)
-county_codes <- str_sub(kreis_fields[value_positions], 1, 5)
-
-message("Found ", length(county_codes), " Kreise")
-
-# Data rows start at line 7, end before footer
-data_start <- 7
-# Find footer: line starting with "__"
-footer_idx <- which(str_detect(raw_lines, "^_+"))
-data_end <- if (length(footer_idx) > 0) footer_idx[1] - 1 else length(raw_lines)
-
-data_lines <- raw_lines[data_start:data_end]
-message("Data rows: ", length(data_lines))
-
-# Parse each data line
-parse_line <- function(line) {
-  fields <- str_split(line, ";")[[1]]
-  date     <- fields[1]
-  age_grp  <- fields[2]
-  gender   <- fields[3]
-  educ     <- str_trim(fields[4])
-
-  # Extract values (odd positions after the first 4 fields)
-  vals <- fields[5:length(fields)]
-  counts <- vals[seq(1, length(vals), by = 2)]
-  # Convert to numeric (some may be "-" or empty for suppressed cells)
-  counts <- suppressWarnings(as.numeric(counts))
-
-  tibble(
-    age_group_raw = age_grp,
-    gender_raw    = gender,
-    educ_raw      = educ,
-    county_code   = county_codes,
-    N             = counts
-  )
-}
-
-zensus_long <- map_dfr(data_lines, parse_line, .progress = TRUE)
-
-message("Parsed ", nrow(zensus_long), " raw cells")
-
-# ---- 2. Filter and recode ---------------------------------------------------
-
-# Keep only specific education categories we need (not "Insgesamt" or subtotals)
-# Education categories in the data:
-#   "Insgesamt" — total
-#   "Noch in schulischer Ausbildung" — still in school
-#   "Mit allgemeinbildendem Schulabschluss" — has a general school degree (subtotal)
-#   "Haupt-/ Volksschulabschluss" — Hauptschule
-#   "Abschluss der Polytechnischen Oberschule" — POS (East German equivalent of Realschule)
-#   "Realschulabschluss, Mttl. Reife o. glw. Abschl." — Realschule
-#   "Fachhochschul- oder Hochschulreife (Abitur)" — Abitur
-#   "Ohne allgemeinbildenden Schulabschluss" — no degree
-
-educ_mapping <- tribble(
-  ~educ_raw,                                              ~educ_label,
-  "Haupt-/ Volksschulabschluss",                          "hauptschule",
-  "Abschluss der Polytechnischen Oberschule",             "realschule",     # POS ≈ Realschule
-  "Realschulabschluss, Mttl. Reife o. glw. Abschl.",     "realschule",
-  "Fachhochschul- oder Hochschulreife (Abitur)",          "abitur",
-  "Ohne allgemeinbildenden Schulabschluss",               "no_degree"
+# Age: 5-year groups → MRP age categories (15-19 included as proxy for 18-19)
+age_mapping <- c(
+  "ALT015B019" = "18-29", "ALT020B024" = "18-29", "ALT025B029" = "18-29",
+  "ALT030B034" = "30-44", "ALT035B039" = "30-44", "ALT040B044" = "30-44",
+  "ALT045B049" = "45-59", "ALT050B054" = "45-59", "ALT055B059" = "45-59",
+  "ALT060B064" = "60-74", "ALT065B069" = "60-74", "ALT070B074" = "60-74",
+  "ALT075B079" = "75+",   "ALT080B084" = "75+",   "ALT085B089" = "75+",
+  "ALT090BXXX" = "75+"
 )
 
-# Filter: adults 18+, specific gender, specific education
-# Age groups to keep (18+): 15-19 is partially under 18, we include it as the Zensus
-# doesn't split 15-17/18-19. Standard MRP practice for Zensus data.
-age_groups_18plus <- c(
-  "15 bis 19 Jahre",
-  "20 bis 24 Jahre", "25 bis 29 Jahre",
-  "30 bis 34 Jahre", "35 bis 39 Jahre",
-  "40 bis 44 Jahre", "45 bis 49 Jahre",
-  "50 bis 54 Jahre", "55 bis 59 Jahre",
-  "60 bis 64 Jahre", "65 bis 69 Jahre",
-  "70 bis 74 Jahre", "75 bis 79 Jahre",
-  "80 bis 84 Jahre", "85 bis 89 Jahre",
-  "90 Jahre und älter"
+# Education: Schulabschluss → MRP categories (POS merged into Realschule)
+educ_mapping <- c(
+  "ABSCH-HAUPT"   = "hauptschule",
+  "ABSCH-POS"     = "realschule",
+  "ABSCH-REAL-01" = "realschule",
+  "ABSCH-FHRABI"  = "abitur",
+  "ABSCH-SCHUL-X" = "no_degree"
 )
 
-# Map 5-year groups → our 5 MRP age categories
-age_mapping <- tribble(
-  ~age_group_raw,           ~age_cat,
-  "15 bis 19 Jahre",        "18-29",
-  "20 bis 24 Jahre",        "18-29",
-  "25 bis 29 Jahre",        "18-29",
-  "30 bis 34 Jahre",        "30-44",
-  "35 bis 39 Jahre",        "30-44",
-  "40 bis 44 Jahre",        "30-44",
-  "45 bis 49 Jahre",        "45-59",
-  "50 bis 54 Jahre",        "45-59",
-  "55 bis 59 Jahre",        "45-59",
-  "60 bis 64 Jahre",        "60-74",
-  "65 bis 69 Jahre",        "60-74",
-  "70 bis 74 Jahre",        "60-74",
-  "75 bis 79 Jahre",        "75+",
-  "80 bis 84 Jahre",        "75+",
-  "85 bis 89 Jahre",        "75+",
-  "90 Jahre und älter",     "75+"
-)
+gender_mapping <- c("GESM" = 1L, "GESW" = 0L)
 
-gender_mapping <- tribble(
-  ~gender_raw,  ~male,
-  "Männlich",   1L,
-  "Weiblich",   0L
-)
+# Employment: use ERWERBSTAETIG for employed count, Insgesamt (NA code) for total
+# Not employed = total - employed
 
-# Apply filters and mappings
-poststrat_raw <- zensus_long |>
+# ---- 3. Filter and aggregate ------------------------------------------------
+
+# Keep only: adult age groups, specific gender, specific education,
+# and either ERWERBSTAETIG or Insgesamt (total) for employment
+cells <- d |>
   filter(
-    age_group_raw %in% age_groups_18plus,
-    gender_raw %in% c("Männlich", "Weiblich")
+    `2_variable_attribute_code` %in% names(age_mapping),
+    `3_variable_attribute_code` %in% names(gender_mapping),
+    `5_variable_attribute_code` %in% names(educ_mapping),
+    `4_variable_attribute_code` == "ERWERBSTAETIG" | is.na(`4_variable_attribute_code`)
   ) |>
-  inner_join(educ_mapping, by = "educ_raw") |>
-  inner_join(age_mapping, by = "age_group_raw") |>
-  inner_join(gender_mapping, by = "gender_raw")
-
-message("After filtering: ", nrow(poststrat_raw), " cells")
-message("Missing N values: ", sum(is.na(poststrat_raw$N)))
-
-# Replace NA counts with 0 (suppressed small cells)
-poststrat_raw <- poststrat_raw |>
+  mutate(
+    county_code = `1_variable_attribute_code`,
+    age_cat     = age_mapping[`2_variable_attribute_code`],
+    male        = gender_mapping[`3_variable_attribute_code`],
+    educ_label  = educ_mapping[`5_variable_attribute_code`],
+    emp_status  = if_else(is.na(`4_variable_attribute_code`), "total", "employed"),
+    N           = suppressWarnings(as.numeric(value))
+  ) |>
   mutate(N = replace_na(N, 0))
 
-# ---- 3. Aggregate to MRP cells ----------------------------------------------
+message("Filtered cells: ", nrow(cells))
 
-# Sum across fine Zensus groups → our 5 age × 2 gender × 5 educ cells per Kreis
-# Note: Realschule + POS are already both mapped to "realschule"
-# Note: 15-19, 20-24, 25-29 are all mapped to "18-29"
+# Aggregate 5-year age groups to MRP bins, POS+Realschule merged
+cells_agg <- cells |>
+  group_by(county_code, age_cat, male, educ_label, emp_status) |>
+  summarise(N = sum(N), .groups = "drop") |>
+  pivot_wider(names_from = emp_status, values_from = N, values_fill = 0) |>
+  mutate(not_employed = pmax(total - employed, 0))  # pmax guards against rounding
 
-poststrat_kreis <- poststrat_raw |>
-  group_by(county_code, age_cat, male, educ_label) |>
-  summarise(N = sum(N, na.rm = TRUE), .groups = "drop")
+message("Aggregated cells: ", nrow(cells_agg),
+        " (expect ", n_distinct(cells_agg$county_code), " × 40 = ",
+        n_distinct(cells_agg$county_code) * 40, ")")
 
-# ---- 4. Handle "Noch in schulischer Ausbildung" and "university" -----------
+# ---- 4. Pivot to long: one row per (county, age, gender, educ, employed) ----
 
-# The Zensus table 2000S-3044 only covers Schulabschluss (school degree), not
-# beruflicher Abschluss (professional/university degree). People with Abitur who
-# went to university are classified under "Abitur" here.
-#
-# For MRP we need a "university" education category. We'll split the Abitur
-# category using national-level proportions from Zensus table 2000S-4024
-# (which cross-tabs Schulabschluss × beruflicher Abschluss).
-#
-# National estimate: among adults with Abitur, ~55% have a university degree.
-# Source: Zensus 2022, Statistisches Bundesamt.
+ps_employed <- cells_agg |>
+  select(county_code, age_cat, male, educ_label, N = employed) |>
+  mutate(employed = 1L)
 
+ps_not_employed <- cells_agg |>
+  select(county_code, age_cat, male, educ_label, N = not_employed) |>
+  mutate(employed = 0L)
+
+poststrat_raw <- bind_rows(ps_employed, ps_not_employed)
+
+# ---- 5. Split Abitur into abitur + university --------------------------------
+
+# Among adults with Abitur, ~55% have a university degree (Zensus 2022 national estimate)
 uni_share_of_abitur <- 0.55
 
-# Also need to distribute "Noch in schulischer Ausbildung" (still in school)
-# These are mostly 15-19 year olds. Distribute proportionally across education
-# categories within each Kreis×age×gender cell.
-#
-# For adults 20+, "still in school" counts are tiny and can be dropped.
-# For 15-19, they're substantial but these people don't have a final degree yet.
-# Standard practice: exclude them or distribute proportionally.
-# We exclude them (they're already partially captured in "no_degree").
+ps_abitur <- poststrat_raw |> filter(educ_label == "abitur")
+ps_other  <- poststrat_raw |> filter(educ_label != "abitur")
 
-# Split Abitur into abitur_only and university
-poststrat_kreis <- poststrat_kreis |>
-  mutate(
-    N_new = case_when(
-      educ_label == "abitur" ~ round(N * (1 - uni_share_of_abitur)),
-      TRUE ~ N
-    )
-  )
+ps_abitur_only <- ps_abitur |>
+  mutate(N = round(N * (1 - uni_share_of_abitur)))
 
-# Create university rows from abitur
-uni_rows <- poststrat_kreis |>
-  filter(educ_label == "abitur") |>
-  mutate(
-    educ_label = "university",
-    N_new = round(N * uni_share_of_abitur)
-  )
+ps_university <- ps_abitur |>
+  mutate(educ_label = "university",
+         N = round(N * uni_share_of_abitur))
 
-poststrat_kreis <- bind_rows(
-  poststrat_kreis |> mutate(N = N_new) |> select(-N_new),
-  uni_rows |> mutate(N = N_new) |> select(-N_new)
-)
+poststrat_kreis <- bind_rows(ps_other, ps_abitur_only, ps_university)
 
-# ---- 5. Final formatting ----------------------------------------------------
+# ---- 6. Final formatting ----------------------------------------------------
 
 poststrat_kreis <- poststrat_kreis |>
   mutate(
@@ -214,13 +120,15 @@ poststrat_kreis <- poststrat_kreis |>
                                                 "abitur", "university")),
     state_code = str_sub(county_code, 1, 2)
   ) |>
-  arrange(county_code, age_cat, male, educ_label)
+  arrange(county_code, age_cat, male, educ_label, employed)
 
-# ---- 6. Diagnostics ---------------------------------------------------------
+# ---- 7. Diagnostics ---------------------------------------------------------
+
+n_counties <- n_distinct(poststrat_kreis$county_code)
+n_cells <- nrow(poststrat_kreis)
 
 message("\n=== Zensus 2022 Poststratification Frame ===")
-message("Cells: ", nrow(poststrat_kreis), " (", n_distinct(poststrat_kreis$county_code),
-        " Kreise × 50 cells)")
+message("Cells: ", n_cells, " (", n_counties, " Kreise × ", n_cells / n_counties, " cells)")
 message("Total adult population: ", format(sum(poststrat_kreis$N), big.mark = ","))
 
 message("\nAge distribution:")
@@ -244,21 +152,59 @@ poststrat_kreis |>
   mutate(pct = round(100 * N / sum(N), 1)) |>
   print()
 
+message("\nEmployment distribution:")
+poststrat_kreis |>
+  group_by(employed) |>
+  summarise(N = sum(N)) |>
+  mutate(pct = round(100 * N / sum(N), 1)) |>
+  print()
+
 message("\nPer-Kreis stats:")
 kreis_stats <- poststrat_kreis |>
   group_by(county_code) |>
-  summarise(n_cells = n(), pop = sum(N), min_cell = min(N), max_cell = max(N))
+  summarise(n_cells = n(), pop = sum(N), min_cell = min(N), zero_cells = sum(N == 0))
 message("  Pop range: ", format(min(kreis_stats$pop), big.mark = ","),
         " - ", format(max(kreis_stats$pop), big.mark = ","))
 message("  Smallest cell: ", min(kreis_stats$min_cell))
+message("  Counties with zero cells: ", sum(kreis_stats$zero_cells > 0),
+        " (total zero cells: ", sum(kreis_stats$zero_cells), ")")
 
-# ---- 7. Aggregate to Bundesland level ----------------------------------------
+# ---- 8. Marginal check against old 50-cell frame ----------------------------
+
+old_ps_path <- file.path(mb_root, "data", "poststrat", "poststrat_kreis.rds")
+if (file.exists(old_ps_path)) {
+  old_ps <- readRDS(old_ps_path)
+  # Sum new frame over employment → should match old frame
+  new_marginal <- poststrat_kreis |>
+    group_by(county_code, age_cat, male, educ_label) |>
+    summarise(N_new = sum(N), .groups = "drop") |>
+    arrange(county_code, age_cat, male, educ_label)
+  old_check <- old_ps |>
+    arrange(county_code, age_cat, male, educ_label) |>
+    select(county_code, age_cat, male, educ_label, N_old = N)
+
+  comparison <- inner_join(new_marginal, old_check,
+                           by = c("county_code", "age_cat", "male", "educ_label"))
+  message("\n=== Marginal check vs old 50-cell frame ===")
+  message("Matched cells: ", nrow(comparison), " / ", nrow(old_check))
+  message("Total pop (new): ", format(sum(comparison$N_new), big.mark = ","))
+  message("Total pop (old): ", format(sum(comparison$N_old), big.mark = ","))
+
+  # They may differ slightly because the data source is different (table 4020 vs 3044)
+  # but should be very close
+  comparison <- comparison |> mutate(diff = N_new - N_old, pct_diff = 100 * diff / pmax(N_old, 1))
+  message("Median cell difference: ", median(comparison$diff))
+  message("Max |cell difference|: ", max(abs(comparison$diff)))
+  message("Correlation: ", round(cor(comparison$N_new, comparison$N_old), 5))
+}
+
+# ---- 9. Aggregate to Bundesland level ----------------------------------------
 
 poststrat_bundesland <- poststrat_kreis |>
-  group_by(state_code, age_cat, male, educ_label) |>
+  group_by(state_code, age_cat, male, educ_label, employed) |>
   summarise(N = sum(N), .groups = "drop")
 
-# ---- 8. Save -----------------------------------------------------------------
+# ---- 10. Save ----------------------------------------------------------------
 
 dir.create(file.path(mb_root, "data", "poststrat"), showWarnings = FALSE, recursive = TRUE)
 
@@ -267,5 +213,5 @@ saveRDS(poststrat_kreis,
 saveRDS(poststrat_bundesland,
         file.path(mb_root, "data", "poststrat", "poststrat_bundesland.rds"))
 
-message("\nSaved Zensus 2022 poststrat frames to data/poststrat/")
-message("This uses ACTUAL Zensus 2022 cross-tabulations at Kreis level.")
+message("\nSaved poststrat frames (with employment) to data/poststrat/")
+message("100 cells per county: 5 age × 2 gender × 5 educ × 2 employed")
