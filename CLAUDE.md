@@ -24,6 +24,19 @@ Critical coding details:
 - **Fear scales** (scale_1_7): Both tracking and cross-section use 1=no fear, 7=great fear.
 - The `apply_binary_rule()` function in `01_harmonize_all.R` matches by both `issue_id` AND `variable`, so different datasets correctly get different rules.
 
+### Berlin Bezirk-level poststratification
+
+Berlin is a single county (AGS 11000) containing 12 Wahlkreise. Without sub-county demographics, all 12 WKRs would get identical poststratification weights. To fix this, `04b_fit_all_lme4.R` loads Bezirk-level demographics from `data/poststrat/poststrat_wkr_berlin.rds` and substitutes them for Berlin WKRs 75–86.
+
+**Data sources:**
+- **Age × sex**: EWR (Einwohnerregisterstatistik) 2020 at LOR Planungsraum level, aggregated to Bezirk
+- **Education (Schulabschluss)**: Zensus 2022 table `2000S-3041` at Bezirk level (age × sex × Schulabschluss)
+- **University split**: Zensus 2022 table `2000S-4028` (Berufsabschluss) to distinguish Abitur-only from university degree holders
+
+**Bezirk→WKR mapping** (`data/poststrat/berlin_wkr_bezirk_mapping.csv`): 1:1 approximation using each WKR's primary Bezirk. WKR 78 (Spandau–Charlottenburg Nord) and WKR 83 (Friedrichshain-Kreuzberg–Prenzlauer Berg Ost) span Bezirk boundaries; they use Spandau (BEZ 05) and Friedrichshain-Kreuzberg (BEZ 02) respectively.
+
+**Age group alignment**: Zensus uses 10-year groups (20–29, 30–39, etc.) while our model uses 18–29, 30–44, 45–59, 60–74, 75+. The 40–49 group is assigned to 30–44 and 70–79 to 60–74 as approximations.
+
 ### Web app (`web/`)
 
 Next.js 15 + MapLibre GL JS choropleth map. TypeScript/React.
@@ -37,6 +50,8 @@ Next.js 15 + MapLibre GL JS choropleth map. TypeScript/React.
 
 **GeoJSON property names:** `state_code` (string) for Bundeslaender, `wkr_nr` (integer) for Wahlkreise, `county_code` (string) for Kreise. The `choroplethExpression()` function uses `numericKeys=true` for Wahlkreise since MapLibre's `match` expression requires type-consistent keys.
 
+**Deployment:** Data files are copied to `awiedem.github.io/assets/data/meinungsbild/` for the live website at german-elections.com. The JS loads from `/assets/data/meinungsbild/` (not raw.githubusercontent.com, which doesn't work with Git LFS).
+
 ## Common tasks
 
 ### Re-running the pipeline
@@ -44,9 +59,18 @@ Next.js 15 + MapLibre GL JS choropleth map. TypeScript/React.
 After changing `issue_concordance.csv` or harmonization code:
 ```bash
 Rscript code/01_harmonize_all.R
-Rscript code/04b_fit_all_lme4.R
+Rscript code/04b_fit_all_lme4.R    # ~45-90 min
 Rscript code/07_export_estimates.R
 Rscript code/08_check_pipeline.R
+```
+
+### Updating the live website
+
+After re-exporting estimates, copy data to the website repo and push:
+```bash
+cp web/public/data/*.json web/public/data/*.geojson \
+   /path/to/awiedem.github.io/assets/data/meinungsbild/
+cd /path/to/awiedem.github.io && git add assets/data/meinungsbild/ && git commit && git push
 ```
 
 ### Adding a new issue

@@ -62,10 +62,19 @@ Total: 1.7 million issue-response observations across 43 binary issues.
 Zensus 2022 cross-tabulations of age × sex × education at the county level.
 - 400 counties × 50 demographic cells = 20,000 poststratification cells
 - Population: ~70 million adults (18+)
+- Berlin: Bezirk-level demographics (12 Bezirke × 50 cells) replace the single county frame for Wahlkreis-level estimates (see below)
 
 ### Geographic covariates
 
 From GERDA (German Election Database): federal election results (AfD, CDU/CSU vote shares, turnout) and INKAR (population density). All standardized (z-scored).
+
+### Berlin Bezirk data
+
+| Source | File | Content |
+|--------|------|---------|
+| EWR 2020 (Einwohnerregisterstatistik) | `data/raw/zensus/` (via GitHub mirror) | Age × sex at LOR Planungsraum level |
+| Zensus 2022 (2000S-3041) | `data/raw/zensus/2000S-3041_berlin_flat.zip` | Bezirke × age × sex × Schulabschluss |
+| Zensus 2022 (2000S-4028) | `data/raw/zensus/2000S-4028_berlin_flat.zip` | Bezirke × age × sex × Berufsabschluss |
 
 ## Poststratification
 
@@ -82,6 +91,22 @@ where j indexes demographic cells (age × sex × education), N_jg is the census 
 - **Bundesländer** (16 federal states) — highest reliability
 - **Kreise** (400 counties) — finest resolution
 - **Wahlkreise** (299 electoral districts) — politically relevant; constructed from county estimates via population-weighted crosswalk
+
+### Berlin Bezirk-level poststratification
+
+Berlin is a single county (AGS 11000) containing 12 Wahlkreise. Standard county-level poststratification assigns identical demographics to all 12, producing no variation except through the `(1 | wkr_nr)` random effect (which is dropped for some issues).
+
+To fix this, we build Bezirk-level poststratification frames using:
+- **Age × sex**: EWR (Einwohnerregisterstatistik) 2020 at LOR Planungsraum level, aggregated to 12 Bezirke
+- **Schulabschluss**: Zensus 2022 table `2000S-3041` (Bezirke × 10-year age groups × sex × school degree)
+- **Berufsabschluss**: Zensus 2022 table `2000S-4028` (Bezirke × 5-year age groups × sex × professional degree) — used to split Abitur holders into abitur-only vs. university degree
+
+Each Bezirk is mapped 1:1 to its primary Wahlkreis. This produces substantial demographic variation — e.g., university share ranges from 18.9% (Marzahn-Hellersdorf, WKR 85) to 44.6% (Friedrichshain-Kreuzberg, WKR 83).
+
+**Limitations:**
+- Zensus age groups (10-year) don't align perfectly with model age categories (18–29, 30–44, etc.); the 40–49 group is assigned to 30–44 and 70–79 to 60–74
+- WKR 78 and WKR 83 span multiple Bezirke; they use their primary Bezirk as proxy
+- Geographic covariates (AfD share, turnout, density) remain at the county level and are identical across all Berlin WKRs
 
 ## Validation
 

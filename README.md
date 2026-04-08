@@ -46,6 +46,10 @@ meinungsbild/
 │   ├── covariates/              # Geographic covariates (.rds)
 │   ├── estimates/               # Model estimates (.rds)
 │   ├── poststrat/               # Poststratification frames (.rds)
+│   │   ├── poststrat_kreis.rds          # County-level (400 × 50 cells)
+│   │   ├── poststrat_wkr_berlin.rds     # Berlin WKR-level (12 × 50 cells)
+│   │   ├── poststrat_berlin_bezirk.rds  # Berlin Bezirk-level (12 × 50 cells)
+│   │   └── berlin_wkr_bezirk_mapping.csv
 │   ├── issue_concordance.csv    # Issue definitions + binary coding rules
 │   └── variable_inventory.csv   # Variable mapping across surveys
 ├── docs/
@@ -89,6 +93,8 @@ Open [http://localhost:3000](http://localhost:3000).
 MRP with `lme4::glmer()`. See [`docs/methodology_notes.md`](docs/methodology_notes.md) for the full model specification, design choices, and validation results.
 
 **Validation:** Median correlation r = 0.899 and median RMSE = 5.5pp against direct Bundesland survey estimates across 43 issues.
+
+**Berlin Bezirk demographics:** Berlin is a single county containing 12 Wahlkreise. To produce meaningful within-Berlin variation, the pipeline uses Bezirk-level demographics from Zensus 2022 (education by age × sex) and EWR 2020 (age × sex population counts) instead of city-wide averages. See `data/poststrat/poststrat_wkr_berlin.rds`.
 
 ## Key files
 
