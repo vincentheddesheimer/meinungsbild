@@ -21,7 +21,7 @@ The production MRP model uses federal election results (AfD vote share, CDU/CSU 
 
 \paragraph{Ground truth.} Official BTW 2021 county-level second-vote (Zweitstimme) shares for six parties (CDU/CSU, SPD, Gr\"une, FDP, AfD, DIE LINKE) across all 400 Kreise, from the German Election Database (GERDA).
 
-\paragraph{Survey data.} GLES Tracking and Cross-Section Cumulation respondents with valid vote intention. We test three year windows: 2021 only (4,533 observations, 245 Kreise with respondents), 2020--2021 (7,097 observations), and 2019--2021 (9,642 observations). Counties without survey respondents receive predictions via the demographic cell structure, state-level random effects, and fixed effects, without county-specific intercepts.
+\paragraph{Survey data.} GLES Tracking and Cross-Section Cumulation respondents with valid vote intention. We test three year windows: 2021 only (4,954 respondents; 4,533 observations per party model after dropping missing demographics), 2020--2021 (7,704 respondents; 7,097 per model), and 2019--2021 (10,411 respondents; 9,642 per model). All windows cover 245 Kreise with at least one respondent. Counties without survey respondents receive predictions via the demographic cell structure, state-level random effects, and fixed effects, without county-specific intercepts.
 
 \paragraph{Poststratification.} Zensus 2022 cross-tabulations of age (5 groups), gender (2), education (5 levels), and employment status (2) at the Kreis level, yielding 100 demographic cells per county (40,000 cells total).
 
@@ -33,7 +33,9 @@ Each validation model is a logistic multilevel regression estimated with \texttt
 y_i \sim \text{Bernoulli}(\pi_i), \quad \text{logit}(\pi_i) &= \mathbf{x}_i'\boldsymbol{\beta} + \sum_k \alpha^{(k)}_{g_k(i)}
 \end{align*}
 %
-where $\mathbf{x}_i$ contains individual-level covariates (gender, employment status) and county-level covariates (log population density, plus specification-dependent socioeconomic variables). The random effects $\alpha^{(k)}$ include varying intercepts for age (5), education (5), and their pairwise interactions with each other and with gender and employment status, plus geographic intercepts for state (16), county, and electoral district. County-level estimates are obtained by poststratifying predicted probabilities over the 100 demographic cells, weighted by Zensus population counts.
+where $\mathbf{x}_i$ contains individual-level covariates (gender, employment status) and county-level covariates (log population density, plus specification-dependent socioeconomic variables). The random effects $\alpha^{(k)}$ include varying intercepts for age (5), education (5), three pairwise demographic interactions (education $\times$ age, gender $\times$ age, gender $\times$ education), an employment $\times$ age interaction (in employment specifications only), survey source, legislative period, and cross-classified geographic intercepts for state (16), county (~245 with respondents), and electoral district (~299). Counties and electoral districts are cross-classified rather than nested, since Wahlkreis boundaries do not align with county boundaries. The model is estimated with \texttt{nAGQ = 0} (Laplace approximation) and the BOBYQA optimizer. If the full model fails to converge, the electoral district random effect is dropped and the model is re-estimated.
+
+Baseline specifications use a 50-cell poststratification frame (5 age $\times$ 2 gender $\times$ 5 education); employment specifications expand this to 100 cells by adding the employment dimension. County-level estimates are obtained by poststratifying predicted probabilities over these demographic cells, weighted by Zensus population counts.
 
 \section{Covariate selection}
 
@@ -41,9 +43,40 @@ Rather than selecting covariates by penalizing the first-stage model (L1/LASSO o
 
 The candidate covariates (all from INKAR via the \texttt{gerda} R package, z-scored) are: share of foreign population, median income, unemployment rate, share aged 65+, GDP per capita, share of school leavers with Abitur, purchasing power, and secondary sector share of gross value added.
 
+\subsection{Cross-validation}
+
+Forward selection on the full set of 400 counties risks overfitting to the specific geographic distribution of BTW 2021 results. To obtain an honest out-of-sample estimate, we run 5-fold spatial cross-validation: the 400 counties are randomly split into 5 folds of 80, and in each fold the forward selection procedure uses only the 320 training counties to evaluate candidate covariates. The selected covariates are then evaluated on the 80 held-out counties. Each county appears in exactly one test fold, so the combined test-set performance covers all 400 counties without data leakage in the selection step.
+
+Table~\ref{tab:cv} reports the results. The mean train-set median $r$ across folds is 0.853, while the mean test-set median $r$ is 0.826 (SD = 0.052). The gap of 0.027 indicates moderate overfitting in the non-CV forward selection estimate of 0.857. The honest CV estimate of 0.831 (computed from the combined test-set predictions across all folds) is only marginally above the baseline without covariates (0.829), suggesting that county-level socioeconomic covariates provide limited additional predictive power beyond what the geographic random effects already capture.
+
+\begin{table}[h]
+\centering
+\caption{5-fold spatial CV: covariate selection stability and out-of-sample performance (2019--2021)}
+\label{tab:cv}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+Fold & Selected covariates & Train median $r$ & Test median $r$ \\
+\midrule
+1 & unemployment, Abitur share, 65+ share, foreign share & 0.857 & 0.831 \\
+2 & unemployment, secondary sector, Abitur share, 65+ share & 0.851 & 0.863 \\
+3 & unemployment, foreign share, 65+ share, secondary, income, purchasing power & 0.856 & 0.743 \\
+4 & unemployment, secondary sector, income, foreign share, 65+ share & 0.855 & 0.835 \\
+5 & unemployment & 0.845 & 0.860 \\
+\midrule
+\multicolumn{2}{@{}l}{Mean} & 0.853 & 0.826 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\footnotesize
+\textit{Notes:} Each fold holds out 80 counties for testing. Forward selection in each fold adds covariates until no candidate improves the median $r$ computed on the 320 training counties. Test median $r$ is computed on the 80 held-out counties. Fold 3 selects 6 covariates and overfits (test $r$ = 0.743); fold 5 selects only unemployment and generalizes well (test $r$ = 0.860).
+\end{table}
+
+Unemployment rate is the only covariate selected in all 5 folds; share aged 65+ is selected in 4 of 5. The remaining covariates are unstable across folds: foreign-born share and secondary sector share appear in 3 of 5, while Abitur share, median income, and purchasing power appear in 2 or fewer. Fold 3, which selects 6 covariates, has the worst test performance (0.743), while fold 5, which selects only unemployment, achieves the best (0.860). More parsimonious selections generalize better.
+
 \section{Results}
 
-Table~\ref{tab:specs} compares 9 specifications. The best-performing specification uses 2019--2021 survey data with forward-selected covariates, achieving a median county-level correlation of 0.857 and RMSE of 4.0 percentage points.
+Table~\ref{tab:specs} compares 10 specifications. The forward-selected specification without CV achieves the highest nominal performance (median $r$ = 0.857), but the CV-corrected estimate is 0.831, only marginally above the covariate-free baseline (0.829).
 
 \begin{table}[h]
 \centering
@@ -53,21 +86,22 @@ Table~\ref{tab:specs} compares 9 specifications. The best-performing specificati
 \toprule
 Specification & Year window & Covariates selected & Median $r$ & Median RMSE (pp) \\
 \midrule
-Forward-selected    & 2019--2021 & 6 & 0.857 & 4.0 \\
-Forward-selected    & 2020--2021 & 3 & 0.846 & 4.1 \\
-Baseline            & 2019--2021 & 0 & 0.829 & 4.1 \\
-+ Employment        & 2020--2021 & 0 & 0.826 & 4.2 \\
-Baseline            & 2020--2021 & 0 & 0.824 & 4.2 \\
-Forward-selected    & 2021       & 3 & 0.823 & 4.3 \\
-+ Employment        & 2021       & 0 & 0.802 & 4.3 \\
-Baseline            & 2021       & 0 & 0.798 & 4.3 \\
-All INKAR (8 covs)  & 2021       & 8 & 0.696 & 4.8 \\
+Forward-selected         & 2019--2021 & 6 & 0.857 & 4.0 \\
+Forward-selected (5-fold CV) & 2019--2021 & 1--6 & 0.831 & 4.2 \\
+Forward-selected         & 2020--2021 & 3 & 0.846 & 4.1 \\
+Baseline                 & 2019--2021 & 0 & 0.829 & 4.1 \\
++ Employment             & 2020--2021 & 0 & 0.826 & 4.2 \\
+Baseline                 & 2020--2021 & 0 & 0.824 & 4.2 \\
+Forward-selected         & 2021       & 3 & 0.823 & 4.3 \\
++ Employment             & 2021       & 0 & 0.802 & 4.3 \\
+Baseline                 & 2021       & 0 & 0.798 & 4.3 \\
+All INKAR (8 covs)       & 2021       & 8 & 0.696 & 4.8 \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.5em}
 \footnotesize
-\textit{Notes:} Each specification fits separate logistic multilevel models for six parties (CDU/CSU, SPD, Gr\"une, FDP, AfD, DIE LINKE). Median $r$ and RMSE are taken across the six party-specific values. All specifications exclude election covariates from the right-hand side. ``Baseline'' includes only log population density as a county-level covariate. ``Forward-selected'' adds covariates via greedy forward selection on median $r$. ``+ Employment'' adds individual-level employment status (binary) with an employment-by-age random effect and uses a 100-cell poststratification frame. ``All INKAR'' enters all 8 candidate covariates without selection. ``Covariates selected'' counts the number of county-level INKAR covariates added beyond log population density.
+\textit{Notes:} Each specification fits separate logistic multilevel models for six parties (CDU/CSU, SPD, Gr\"une, FDP, AfD, DIE LINKE). Median $r$ and RMSE are taken across the six party-specific values. All specifications exclude election covariates from the right-hand side. ``Baseline'' includes only log population density as a county-level covariate. ``Forward-selected'' adds covariates via greedy forward selection on median $r$. The ``5-fold CV'' row reports the combined test-set performance from spatial cross-validation, where covariates are selected on 320 training counties and evaluated on 80 held-out counties per fold. ``+ Employment'' adds individual-level employment status (binary) with an employment-by-age random effect and uses a 100-cell poststratification frame. ``All INKAR'' enters all 8 candidate covariates without selection. ``Covariates selected'' counts the number of county-level INKAR covariates added beyond log population density.
 \end{table}
 
 Table~\ref{tab:party} reports per-party results for the best specification.
@@ -99,8 +133,12 @@ FDP       & 0.573 & 1.9 & 0.6  & \\
 
 \section{Key findings}
 
-Three results stand out. First, more survey data consistently improves predictions: the 2019--2021 window (9,642 observations) outperforms the 2021-only window (4,533) regardless of model specification. Second, covariate selection must optimize the final validation target. LASSO on first-stage BIC selected too many covariates and degraded county-level performance (median $r$ = 0.742 with 8 INKAR covariates via LASSO, vs.\ 0.857 via forward selection on the same candidates). The disconnect arises because covariates that improve individual-level fit can compete with the county random effect for geographic variance, reducing the model's ability to differentiate counties after poststratification. Third, adding employment as an individual-level demographic provides a modest improvement (0.824 to 0.826 for the 2020--2021 baseline), while urban-rural interactions with education and age do not help for vote share prediction (the county random effect already captures urban-rural differences in levels).
+Five results stand out. First, more survey data consistently improves predictions: the 2019--2021 window (9,642 observations) outperforms the 2021-only window (4,533) regardless of model specification. Second, covariate selection must optimize the final validation target. Entering all 8 INKAR covariates without selection degrades county-level performance (median $r$ = 0.696, vs.\ 0.829 for the covariate-free baseline with the same data). Adding covariates that improve individual-level fit can compete with the county random effect for geographic variance, reducing the model's ability to differentiate counties after poststratification. Forward selection on the end-to-end validation target avoids this by retaining only covariates that improve poststratified county-level predictions. Third, 5-fold spatial cross-validation reveals that much of the forward selection gain is overfitting: the honest out-of-sample estimate (median $r$ = 0.831) is only marginally above the covariate-free baseline (0.829). Unemployment rate is the only covariate selected in all 5 folds; most other covariates are unstable across geographic subsets. The most defensible production model would add at most unemployment rate and share aged 65+. Fourth, letting demographic effects vary by state improves predictions slightly. Adding an age-by-state random effect ($1 | \text{age\_cat:state\_code}$, 80 cells) raises median $r$ from 0.829 to 0.832, the largest structural gain we found. Education-by-state (0.830) and gender-by-state (0.830) add less, and combining multiple demographic-by-state interactions does not improve over age-by-state alone. The age-by-state interaction captures systematic regional differences in how age relates to party preference (e.g., the age gradient of AfD support differs between East and West). Fifth, adding employment as an individual-level demographic provides a modest improvement (0.824 to 0.826 for the 2020--2021 baseline).
 
-FDP is the weakest-performing party ($r$ = 0.573), likely because its vote share has low geographic variance (IQR of 2.3--4.9 percentage points across counties) and its supporters are not well predicted by standard demographics. All other parties exceed $r$ = 0.82. The validation is conservative: the production model includes election covariates (excluded here), so production estimates should perform better than these numbers suggest.
+We also tested temporal weighting to downweight older observations within the 2019--2021 window, assigning kernel weights that decay with distance from 2021 (e.g., $w_{2019} = 0.33$, $w_{2020} = 0.67$, $w_{2021} = 1.0$ for linear decay). All weighting schemes performed equal to or worse than uniform weights (median $r$: 0.830 for mild decay, 0.826 for linear, 0.820 for steep, vs.\ 0.829 for equal weights). The legislative period random effect already absorbs systematic temporal shifts, and downweighting reduces the effective sample size without a compensating gain in temporal relevance.
+
+For the vote share validation, the current specification is likely near its ceiling. The main portable gains are more survey data (2019--2021 vs.\ 2021 only) and the age-by-state interaction. Further expanding generic interaction structure (e.g., education $\times$ age $\times$ state) is unlikely to move performance much given the data constraints. For policy issues beyond vote choice, the most useful omitted structure may be issue-specific rather than generic: whether the education effect, urban-rural gradient, or East-West divide matters for a particular item.
+
+FDP is the weakest-performing party ($r$ = 0.573), likely because its vote share has low geographic variance (SD = 2.2 percentage points across counties, the lowest of the six parties) and its supporters are not well predicted by standard demographics. All other parties exceed $r$ = 0.82. The validation is conservative: the production model includes election covariates (excluded here), so production estimates should perform better than these numbers suggest.
 
 \end{document}

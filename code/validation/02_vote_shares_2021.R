@@ -257,15 +257,11 @@ run_spec <- function(spec_name, use_inkar = FALSE, use_employed = FALSE,
 
 # ---- 7. Forward selection on end-to-end validation metric --------------------
 
-# Greedy forward selection: add one covariate at a time, keep it if it improves
-# median county-level r across all 6 parties. Optimizes the actual validation
-# target (post-MRP county predictions) rather than first-stage model fit.
+# Core forward selection engine. If train_counties is NULL, uses all counties.
+# Otherwise, selection criterion uses only train_counties; predictions for all 400.
+forward_select_engine <- function(survey_data, candidate_covs, use_urban_ix,
+                                  train_counties = NULL) {
 
-forward_select_spec <- function(spec_name, survey_data, candidate_covs = inkar_vars,
-                                use_urban_ix = FALSE) {
-  message("\n=== ", spec_name, " (forward selection) ===\n")
-
-  # Helper: run all 6 parties with given extra covariates, return median r
   eval_covs <- function(covs) {
     results <- future_lapply(vote_issues, function(issue) {
       fit_and_poststratify_kreis(issue, survey_data, extra_covs = covs,
@@ -279,14 +275,18 @@ forward_select_spec <- function(spec_name, survey_data, candidate_covs = inkar_v
       mutate(county_code = as.character(county_code))
     val <- inner_join(mrp, btw21_long, by = c("county_code", "issue_id"))
 
-    party_r <- val |>
+    # Evaluate only on training counties if specified
+    val_eval <- if (!is.null(train_counties)) {
+      val |> filter(county_code %in% train_counties)
+    } else val
+
+    party_r <- val_eval |>
       group_by(issue_id) |>
       summarise(r = cor(estimate, actual, use = "complete.obs"), .groups = "drop")
 
     list(median_r = median(party_r$r), results = results)
   }
 
-  # Baseline: no extra covariates
   baseline <- eval_covs(NULL)
   best_r <- baseline$median_r
   best_results <- baseline$results
@@ -310,7 +310,6 @@ forward_select_spec <- function(spec_name, survey_data, candidate_covs = inkar_v
       message("    + ", cov, ": median r = ", round(res$median_r, 4))
     }
 
-    # Find best candidate this round
     round_r <- sapply(round_results, function(x) x$median_r)
     best_candidate <- names(which.max(round_r))
     best_candidate_r <- max(round_r)
@@ -327,13 +326,23 @@ forward_select_spec <- function(spec_name, survey_data, candidate_covs = inkar_v
     }
   }
 
-  message("\nFinal selected covariates: ",
-          if (length(selected) == 0) "(none)" else paste(selected, collapse = ", "))
-  message("Final median r: ", round(best_r, 4))
+  list(selected = selected, best_r = best_r, results = best_results)
+}
 
-  # Build final validation metrics from best_results
-  successful <- names(compact(best_results))
-  mrp <- map_dfr(successful, ~ mutate(best_results[[.x]]$kreis, issue_id = .x)) |>
+# Non-CV forward selection (original behavior)
+forward_select_spec <- function(spec_name, survey_data, candidate_covs = inkar_vars,
+                                use_urban_ix = FALSE) {
+  message("\n=== ", spec_name, " (forward selection) ===\n")
+
+  fs <- forward_select_engine(survey_data, candidate_covs, use_urban_ix)
+
+  message("\nFinal selected covariates: ",
+          if (length(fs$selected) == 0) "(none)" else paste(fs$selected, collapse = ", "))
+  message("Final median r: ", round(fs$best_r, 4))
+
+  # Build validation metrics from all 400 counties
+  successful <- names(compact(fs$results))
+  mrp <- map_dfr(successful, ~ mutate(fs$results[[.x]]$kreis, issue_id = .x)) |>
     mutate(county_code = as.character(county_code))
   val <- inner_join(mrp, btw21_long, by = c("county_code", "issue_id"))
 
@@ -352,7 +361,102 @@ forward_select_spec <- function(spec_name, survey_data, candidate_covs = inkar_v
     arrange(desc(r)) |>
     select(spec, party, issue_id, n_counties, r, rmse_pp, bias_pp, mean_mrp, mean_actual)
 
-  list(metrics = metrics, val = val, selected = selected)
+  list(metrics = metrics, val = val, selected = fs$selected)
+}
+
+# K-fold spatial CV forward selection: select covariates on K-1 folds of counties,
+# evaluate on held-out fold. Reports honest out-of-sample performance.
+forward_select_cv <- function(spec_name, survey_data, candidate_covs = inkar_vars,
+                              use_urban_ix = FALSE, K = 5) {
+  message("\n=== ", spec_name, " (", K, "-fold spatial CV) ===\n")
+
+  # Split 400 ground-truth counties into K folds
+  all_counties <- sort(unique(btw21_long$county_code))
+  set.seed(20260409)
+  fold_ids <- sample(rep(1:K, length.out = length(all_counties)))
+  folds <- split(all_counties, fold_ids)
+
+  fold_results <- list()
+
+  for (k in seq_len(K)) {
+    test_counties  <- folds[[k]]
+    train_counties <- setdiff(all_counties, test_counties)
+    message("\n--- Fold ", k, "/", K, " (train: ", length(train_counties),
+            " counties, test: ", length(test_counties), ") ---")
+
+    # Forward selection using only training counties for evaluation
+    fs <- forward_select_engine(survey_data, candidate_covs, use_urban_ix,
+                                train_counties = train_counties)
+
+    message("  Fold ", k, " selected: ",
+            if (length(fs$selected) == 0) "(none)" else paste(fs$selected, collapse = ", "))
+
+    # Evaluate on held-out test counties
+    successful <- names(compact(fs$results))
+    mrp <- map_dfr(successful, ~ mutate(fs$results[[.x]]$kreis, issue_id = .x)) |>
+      mutate(county_code = as.character(county_code))
+    val_test <- inner_join(mrp, btw21_long, by = c("county_code", "issue_id")) |>
+      filter(county_code %in% test_counties)
+
+    test_r <- val_test |>
+      group_by(issue_id) |>
+      summarise(r = cor(estimate, actual, use = "complete.obs"), .groups = "drop")
+
+    fold_results[[k]] <- list(
+      selected = fs$selected,
+      train_r  = fs$best_r,
+      test_median_r = median(test_r$r),
+      test_party_r = test_r,
+      val_test = val_test
+    )
+
+    message("  Fold ", k, " train median r: ", round(fs$best_r, 4),
+            " | test median r: ", round(median(test_r$r), 4))
+  }
+
+  # Aggregate across folds
+  train_rs <- sapply(fold_results, function(x) x$train_r)
+  test_rs  <- sapply(fold_results, function(x) x$test_median_r)
+  all_selected <- lapply(fold_results, function(x) x$selected)
+
+  message("\n=== CV Summary ===")
+  message("Mean train median r: ", round(mean(train_rs), 4))
+  message("Mean test median r:  ", round(mean(test_rs), 4),
+          " (SD: ", round(sd(test_rs), 4), ")")
+  message("Selected covariates per fold:")
+  for (k in seq_len(K)) {
+    sel <- all_selected[[k]]
+    message("  Fold ", k, ": ", if (length(sel) == 0) "(none)" else paste(sel, collapse = ", "))
+  }
+
+  # Count how often each covariate is selected
+  cov_counts <- table(unlist(all_selected))
+  cov_counts <- sort(cov_counts, decreasing = TRUE)
+  message("Covariate selection frequency (across ", K, " folds):")
+  for (i in seq_along(cov_counts)) {
+    message("  ", names(cov_counts)[i], ": ", cov_counts[i], "/", K)
+  }
+
+  # Build combined test-set validation (each county appears exactly once)
+  val_all_test <- bind_rows(lapply(fold_results, function(x) x$val_test))
+
+  metrics <- val_all_test |>
+    group_by(issue_id) |>
+    summarise(
+      n_counties  = n(),
+      r           = cor(estimate, actual, use = "complete.obs"),
+      rmse_pp     = sqrt(mean((estimate - actual)^2, na.rm = TRUE)) * 100,
+      bias_pp     = mean(estimate - actual, na.rm = TRUE) * 100,
+      mean_mrp    = mean(estimate, na.rm = TRUE) * 100,
+      mean_actual = mean(actual, na.rm = TRUE) * 100,
+      .groups     = "drop"
+    ) |>
+    mutate(party = party_labels[issue_id], spec = spec_name) |>
+    arrange(desc(r)) |>
+    select(spec, party, issue_id, n_counties, r, rmse_pp, bias_pp, mean_mrp, mean_actual)
+
+  list(metrics = metrics, val = val_all_test, selected = all_selected,
+       cv_summary = tibble(fold = 1:K, train_r = train_rs, test_r = test_rs))
 }
 
 # ---- 8. Run all specs --------------------------------------------------------
@@ -381,20 +485,19 @@ res_fwd     <- forward_select_spec("forward_select",              survey_2021)
 res_fwd_2yr <- forward_select_spec("forward_select_2020_2021",    survey_2020_2021)
 res_fwd_3yr <- forward_select_spec("forward_select_2019_2021",    survey_2019_2021)
 
-# Urban interaction specs (2019-2021 only — best year window)
-res_3yr_urb     <- run_spec("baseline_urban_2019_2021", use_urban_ix = TRUE, survey_data = survey_2019_2021)
-res_fwd_3yr_urb <- forward_select_spec("forward_select_urban_2019_2021", survey_2019_2021, use_urban_ix = TRUE)
+# 5-fold spatial CV forward selection (best year window only)
+res_fwd_3yr_cv <- forward_select_cv("forward_select_cv_2019_2021", survey_2019_2021)
 
 # ---- 9. Print comparison -----------------------------------------------------
 
-combined <- bind_rows(res_3yr$metrics, res_3yr_urb$metrics,
+combined <- bind_rows(res_3yr$metrics,
                       res_2yr$metrics, res_2yr_emp$metrics,
                       res_base$metrics, res_emp$metrics, res_inkar$metrics,
                       res_fwd$metrics, res_fwd_2yr$metrics, res_fwd_3yr$metrics,
-                      res_fwd_3yr_urb$metrics)
+                      res_fwd_3yr_cv$metrics)
 
-all_specs <- c("baseline_2019_2021", "baseline_urban_2019_2021",
-               "forward_select_2019_2021", "forward_select_urban_2019_2021",
+all_specs <- c("baseline_2019_2021",
+               "forward_select_2019_2021", "forward_select_cv_2019_2021",
                "baseline_2020_2021", "baseline_2020_2021_emp", "forward_select_2020_2021",
                "baseline", "baseline_employed", "baseline_inkar", "forward_select")
 
@@ -426,13 +529,19 @@ for (p in sort(unique(combined$party))) {
 
 # Report forward-selected covariates
 fwd_specs <- list(
-  "2021" = res_fwd, "2020-2021" = res_fwd_2yr,
-  "2019-2021" = res_fwd_3yr, "2019-2021+urban" = res_fwd_3yr_urb
+  "2021" = res_fwd, "2020-2021" = res_fwd_2yr, "2019-2021" = res_fwd_3yr
 )
 message("\nForward-selected covariates:")
 for (nm in names(fwd_specs)) {
   sel <- fwd_specs[[nm]]$selected
   message("  ", nm, ": ", if (length(sel) == 0) "(none)" else paste(sel, collapse = ", "))
+}
+message("\nCV forward selection (2019-2021, 5-fold):")
+message("  Mean test median r: ", round(mean(res_fwd_3yr_cv$cv_summary$test_r), 4),
+        " (train: ", round(mean(res_fwd_3yr_cv$cv_summary$train_r), 4), ")")
+for (k in seq_along(res_fwd_3yr_cv$selected)) {
+  sel <- res_fwd_3yr_cv$selected[[k]]
+  message("  Fold ", k, ": ", if (length(sel) == 0) "(none)" else paste(sel, collapse = ", "))
 }
 
 # ---- 10. Save outputs --------------------------------------------------------
@@ -442,9 +551,8 @@ message("\nSaved: ", file.path(output_dir, "vote_share_validation_2021only.csv")
 
 # Scatter plot: all specs
 spec_labels <- c(baseline_2019_2021 = "Baseline (2019-2021)",
-                 baseline_urban_2019_2021 = "Urban IX (2019-2021)",
                  forward_select_2019_2021 = "Fwd-selected (2019-2021)",
-                 forward_select_urban_2019_2021 = "Fwd-selected + Urban IX (2019-2021)",
+                 forward_select_cv_2019_2021 = "Fwd-selected CV (2019-2021)",
                  baseline_2020_2021 = "Baseline (2020-2021)",
                  baseline_2020_2021_emp = "+ Employment (2020-2021)",
                  forward_select_2020_2021 = "Fwd-selected (2020-2021)",
@@ -459,10 +567,9 @@ scatter_data <- combined |>
   distinct() |>
   left_join(
     bind_rows(
-      res_3yr$val      |> mutate(spec = "baseline_2019_2021"),
-      res_3yr_urb$val  |> mutate(spec = "baseline_urban_2019_2021"),
-      res_fwd_3yr$val  |> mutate(spec = "forward_select_2019_2021"),
-      res_fwd_3yr_urb$val |> mutate(spec = "forward_select_urban_2019_2021"),
+      res_3yr$val          |> mutate(spec = "baseline_2019_2021"),
+      res_fwd_3yr$val      |> mutate(spec = "forward_select_2019_2021"),
+      res_fwd_3yr_cv$val   |> mutate(spec = "forward_select_cv_2019_2021"),
       res_2yr$val      |> mutate(spec = "baseline_2020_2021"),
       res_2yr_emp$val  |> mutate(spec = "baseline_2020_2021_emp"),
       res_fwd_2yr$val  |> mutate(spec = "forward_select_2020_2021"),
@@ -498,5 +605,5 @@ p <- ggplot(scatter_data, aes(x = actual_pct, y = estimate_pct)) +
   theme(strip.text = element_text(face = "bold"))
 
 ggsave(file.path(output_dir, "vote_share_scatter_2021only.pdf"),
-       p, width = 14, height = 25)
+       p, width = 14, height = 23)
 message("Saved: ", file.path(output_dir, "vote_share_scatter_2021only.pdf"))
