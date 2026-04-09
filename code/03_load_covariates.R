@@ -1,11 +1,11 @@
 ## 03_load_covariates.R
-## Load geographic-level covariates for MRP from GERDA and regional statistics
+## Load geographic-level covariates for MRP from GERDA package and election data
 ##
 ## Outputs: data/covariates/kreis_covariates.rds
 ##          data/covariates/bundesland_covariates.rds
 
 library(tidyverse)
-library(sf)
+library(gerda)
 
 # ---- Paths ----------------------------------------------------------------
 mb_root    <- here::here()
@@ -16,13 +16,12 @@ gerda_root <- Sys.getenv("GERDA_ROOT",
 dir.create(file.path(mb_root, "data", "covariates"), showWarnings = FALSE, recursive = TRUE)
 
 # ---- 1. Federal election results (county level) ---------------------------
-# Party vote shares are the single strongest geographic predictor in MRP
+
 fed_cty <- readRDS(file.path(
   gerda_root, "data", "federal_elections", "county_level", "final",
   "federal_cty_harm.rds"
 ))
 
-# Keep most recent election and key party shares
 fed_cty_latest <- fed_cty |>
   filter(election_year == max(election_year)) |>
   transmute(
@@ -37,13 +36,16 @@ fed_cty_latest <- fed_cty |>
     fed_afd      = afd
   )
 
-# ---- 2. County-level covariates (population, area, employment) -------------
+message("Election data: BTW ", fed_cty_latest$fed_year[1],
+        " (", nrow(fed_cty_latest), " counties)")
+
+# ---- 2. County-level covariates (population, area) -----------------------
+
 cty_covars <- readRDS(file.path(
   gerda_root, "data", "covars_county", "final",
   "cty_area_pop_emp.rds"
 ))
 
-# Most recent year
 cty_covars_latest <- cty_covars |>
   filter(year == max(year)) |>
   transmute(
@@ -51,77 +53,66 @@ cty_covars_latest <- cty_covars |>
     county_name    = county_name_21,
     cty_population = population_cty,
     cty_area       = area_cty,
-    cty_pop_density = pop_density_cty,
-    cty_employees  = employees_cty
+    cty_pop_density = pop_density_cty
   )
 
-# ---- 3. INKAR socioeconomic indicators (county level) ----------------------
-inkar_path <- file.path(
-  gerda_root, "data", "covars_county", "cty_inkar_harm2021.csv"
-)
+# ---- 3. INKAR covariates from gerda package ------------------------------
 
-if (file.exists(inkar_path)) {
-  inkar <- read_csv(inkar_path, show_col_types = FALSE)
+gerda_cov <- gerda_covariates()
 
-  # Select key MRP-relevant indicators
-  inkar_vars <- c(
-    "Ausländeranteil_inkar",
-    "Bruttoinlandsprodukt_je_Einwohner_inkar",
-    "Medianeinkommen_inkar",
-    "Mietpreise_inkar",
-    "Schutzsuchende_an_Bevölkerung_inkar"
-  )
+# Use 2021 (full coverage); fall back to most recent available year per county
+gerda_latest <- gerda_cov |>
+  filter(year <= 2021) |>
+  group_by(county_code) |>
+  filter(year == max(year)) |>
+  ungroup() |>
+  select(-year)
 
-  # INKAR uses 4-digit county codes; pad to 5-digit to match GERDA
-  inkar <- inkar |>
-    mutate(county_code = str_pad(as.character(county), 5, pad = "0"))
+message("GERDA covariates: ", nrow(gerda_latest), " counties, ",
+        ncol(gerda_latest) - 1, " variables (year <= 2021)")
 
-  available_vars <- intersect(inkar_vars, names(inkar))
+# Check coverage
+na_counts <- gerda_latest |>
+  summarise(across(-county_code, ~ sum(is.na(.x)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "n_na") |>
+  filter(n_na > 0)
 
-  # Pick most recent non-NA year per county per variable, then merge.
-  # Year 2021 has all NAs for most variables; 2020 has full coverage.
-  inkar_latest <- inkar |>
-    select(county_code, year, all_of(available_vars)) |>
-    filter(year <= 2020) |>
-    group_by(county_code) |>
-    filter(year == max(year)) |>
-    ungroup() |>
-    select(-year)
-} else {
-  message("INKAR file not found at: ", inkar_path)
-  inkar_latest <- NULL
+if (nrow(na_counts) > 0) {
+  message("Variables with NAs:")
+  for (i in seq_len(nrow(na_counts))) {
+    message("  ", na_counts$variable[i], ": ", na_counts$n_na[i], " / ", nrow(gerda_latest))
+  }
 }
 
 # ---- 4. Derive East/West and state identifiers ----------------------------
-# State = first two digits of county_code
+
 derive_state_vars <- function(df) {
   df |>
     mutate(
       state_code = str_sub(county_code, 1, 2),
       east = state_code %in% c("12", "13", "14", "15", "16"),
-      # Berlin (11) coded separately
       berlin = state_code == "11"
     )
 }
 
 # ---- 5. Merge all county-level covariates ---------------------------------
+
 kreis_covariates <- cty_covars_latest |>
   left_join(fed_cty_latest, by = "county_code") |>
+  left_join(gerda_latest, by = "county_code") |>
   derive_state_vars()
 
-if (!is.null(inkar_latest)) {
-  kreis_covariates <- kreis_covariates |>
-    left_join(inkar_latest, by = "county_code")
-}
+message("\nMerged covariates: ", nrow(kreis_covariates), " counties, ",
+        ncol(kreis_covariates), " columns")
 
 # ---- 6. Aggregate to Bundesland level -------------------------------------
+
 bundesland_covariates <- kreis_covariates |>
   group_by(state_code) |>
   summarise(
     n_kreise        = n(),
     bl_population   = sum(cty_population, na.rm = TRUE),
     bl_pop_density  = sum(cty_population, na.rm = TRUE) / sum(cty_area, na.rm = TRUE),
-    # Population-weighted vote shares
     bl_fed_turnout  = weighted.mean(fed_turnout, cty_population, na.rm = TRUE),
     bl_fed_cdu_csu  = weighted.mean(fed_cdu_csu, cty_population, na.rm = TRUE),
     bl_fed_spd      = weighted.mean(fed_spd, cty_population, na.rm = TRUE),
@@ -134,10 +125,12 @@ bundesland_covariates <- kreis_covariates |>
   )
 
 # ---- 7. Save ---------------------------------------------------------------
+
 saveRDS(kreis_covariates,
         file.path(mb_root, "data", "covariates", "kreis_covariates.rds"))
 saveRDS(bundesland_covariates,
         file.path(mb_root, "data", "covariates", "bundesland_covariates.rds"))
 
-message("Saved ", nrow(kreis_covariates), " Kreis-level covariates")
+message("\nSaved ", nrow(kreis_covariates), " Kreis-level covariates (",
+        ncol(kreis_covariates), " cols)")
 message("Saved ", nrow(bundesland_covariates), " Bundesland-level covariates")
