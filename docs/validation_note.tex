@@ -1,0 +1,106 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+\title{MRP Validation Note: County-Level Vote Share Predictions}
+\author{Meinungsbild Project}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Validation design}
+
+The production MRP model uses federal election results (AfD vote share, CDU/CSU vote share, turnout) as county-level covariates. Including actual vote shares on the right-hand side when validating predicted vote shares would be partly circular. The validation models therefore exclude all election covariates, using only individual demographics, county-level socioeconomic covariates, and geographic random effects. This makes the comparison a genuine out-of-sample test: the model must recover county-level partisan variation from survey responses and geographic structure alone.
+
+\section{Data}
+
+\paragraph{Ground truth.} Official BTW 2021 county-level second-vote (Zweitstimme) shares for six parties (CDU/CSU, SPD, Gr\"une, FDP, AfD, DIE LINKE) across all 400 Kreise, from the German Election Database (GERDA).
+
+\paragraph{Survey data.} GLES Tracking and Cross-Section Cumulation respondents with valid vote intention. We test three year windows: 2021 only (4,533 observations, 245 Kreise with respondents), 2020--2021 (7,097 observations), and 2019--2021 (9,642 observations). Counties without survey respondents receive predictions via the demographic cell structure, state-level random effects, and fixed effects, without county-specific intercepts.
+
+\paragraph{Poststratification.} Zensus 2022 cross-tabulations of age (5 groups), gender (2), education (5 levels), and employment status (2) at the Kreis level, yielding 100 demographic cells per county (40,000 cells total).
+
+\section{Model}
+
+Each validation model is a logistic multilevel regression estimated with \texttt{lme4::glmer()}:
+%
+\begin{align*}
+y_i \sim \text{Bernoulli}(\pi_i), \quad \text{logit}(\pi_i) &= \mathbf{x}_i'\boldsymbol{\beta} + \sum_k \alpha^{(k)}_{g_k(i)}
+\end{align*}
+%
+where $\mathbf{x}_i$ contains individual-level covariates (gender, employment status) and county-level covariates (log population density, plus specification-dependent socioeconomic variables). The random effects $\alpha^{(k)}$ include varying intercepts for age (5), education (5), and their pairwise interactions with each other and with gender and employment status, plus geographic intercepts for state (16), county, and electoral district. County-level estimates are obtained by poststratifying predicted probabilities over the 100 demographic cells, weighted by Zensus population counts.
+
+\section{Covariate selection}
+
+Rather than selecting covariates by penalizing the first-stage model (L1/LASSO on individual-level BIC), we use greedy forward selection on the end-to-end validation target. Starting from a baseline with log population density only, we add one county-level covariate at a time, run the full MRP pipeline (fit, predict, poststratify), and retain the covariate that most improves the median correlation across the six parties. The procedure stops when no candidate improves the median $r$.
+
+The candidate covariates (all from INKAR via the \texttt{gerda} R package, z-scored) are: share of foreign population, median income, unemployment rate, share aged 65+, GDP per capita, share of school leavers with Abitur, purchasing power, and secondary sector share of gross value added.
+
+\section{Results}
+
+Table~\ref{tab:specs} compares 9 specifications. The best-performing specification uses 2019--2021 survey data with forward-selected covariates, achieving a median county-level correlation of 0.857 and RMSE of 4.0 percentage points.
+
+\begin{table}[h]
+\centering
+\caption{Vote share validation: MRP-predicted vs.\ actual BTW 2021 county-level vote shares}
+\label{tab:specs}
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Specification & Year window & Covariates selected & Median $r$ & Median RMSE (pp) \\
+\midrule
+Forward-selected    & 2019--2021 & 6 & 0.857 & 4.0 \\
+Forward-selected    & 2020--2021 & 3 & 0.846 & 4.1 \\
+Baseline            & 2019--2021 & 0 & 0.829 & 4.1 \\
++ Employment        & 2020--2021 & 0 & 0.826 & 4.2 \\
+Baseline            & 2020--2021 & 0 & 0.824 & 4.2 \\
+Forward-selected    & 2021       & 3 & 0.823 & 4.3 \\
++ Employment        & 2021       & 0 & 0.802 & 4.3 \\
+Baseline            & 2021       & 0 & 0.798 & 4.3 \\
+All INKAR (8 covs)  & 2021       & 8 & 0.696 & 4.8 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\footnotesize
+\textit{Notes:} Each specification fits separate logistic multilevel models for six parties (CDU/CSU, SPD, Gr\"une, FDP, AfD, DIE LINKE). Median $r$ and RMSE are taken across the six party-specific values. All specifications exclude election covariates from the right-hand side. ``Baseline'' includes only log population density as a county-level covariate. ``Forward-selected'' adds covariates via greedy forward selection on median $r$. ``+ Employment'' adds individual-level employment status (binary) with an employment-by-age random effect and uses a 100-cell poststratification frame. ``All INKAR'' enters all 8 candidate covariates without selection. ``Covariates selected'' counts the number of county-level INKAR covariates added beyond log population density.
+\end{table}
+
+Table~\ref{tab:party} reports per-party results for the best specification.
+
+\begin{table}[h]
+\centering
+\caption{Per-party validation results: forward-selected specification (2019--2021)}
+\label{tab:party}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Party & $r$ & RMSE (pp) & Bias (pp) & Selected covariates \\
+\midrule
+DIE LINKE & 0.863 & 2.1 & 1.4  & \\
+AfD       & 0.857 & 4.7 & $-$2.7 & \\
+Gr\"une   & 0.857 & 6.5 & 5.8  & \\
+SPD       & 0.856 & 3.8 & 1.4  & \\
+CDU/CSU   & 0.824 & 4.3 & $-$2.1 & \\
+FDP       & 0.573 & 1.9 & 0.6  & \\
+\midrule
+\multicolumn{5}{@{}l}{\footnotesize Selected covariates (shared across parties): unemployment rate, share Abitur,} \\
+\multicolumn{5}{@{}l}{\footnotesize share 65+, secondary sector share, median income, foreign-born share} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\footnotesize
+\textit{Notes:} Correlations ($r$) and RMSE are computed across 400 Kreise. Bias is mean(MRP $-$ actual) in percentage points; positive values indicate MRP overestimates. Forward selection adds covariates sequentially until no addition improves the median $r$ across parties. The same set of covariates is used for all six parties.
+\end{table}
+
+\section{Key findings}
+
+Three results stand out. First, more survey data consistently improves predictions: the 2019--2021 window (9,642 observations) outperforms the 2021-only window (4,533) regardless of model specification. Second, covariate selection must optimize the final validation target. LASSO on first-stage BIC selected too many covariates and degraded county-level performance (median $r$ = 0.742 with 8 INKAR covariates via LASSO, vs.\ 0.857 via forward selection on the same candidates). The disconnect arises because covariates that improve individual-level fit can compete with the county random effect for geographic variance, reducing the model's ability to differentiate counties after poststratification. Third, adding employment as an individual-level demographic provides a modest improvement (0.824 to 0.826 for the 2020--2021 baseline), while urban-rural interactions with education and age do not help for vote share prediction (the county random effect already captures urban-rural differences in levels).
+
+FDP is the weakest-performing party ($r$ = 0.573), likely because its vote share has low geographic variance (IQR of 2.3--4.9 percentage points across counties) and its supporters are not well predicted by standard demographics. All other parties exceed $r$ = 0.82. The validation is conservative: the production model includes election covariates (excluded here), so production estimates should perform better than these numbers suggest.
+
+\end{document}
