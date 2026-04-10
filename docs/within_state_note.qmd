@@ -1,0 +1,115 @@
+---
+title: "Within-State Prediction in MRP: Diagnostics and the Between-Within Problem"
+format:
+  html:
+    embed-resources: true
+    toc: true
+---
+
+## Motivation
+
+How much of MRP's county-level predictive accuracy comes from getting between-state differences right (easy, given 16 state random effects estimated from thousands of respondents) versus predicting within-state variation (hard, requiring the model to differentiate counties within the same state)?
+
+Using the production model's vote share predictions compared against BTW 2021 county-level results:
+
+| Party | Overall $r$ | Within-state $r$ | Between-state $r$ | % variance between states |
+|-------|------------|------------------|-------------------|--------------------------|
+| AfD | 0.967 | 0.949 | 0.991 | 79% |
+| CDU/CSU | 0.882 | 0.902 | 0.755 | 65% |
+| Grüne | 0.863 | 0.945 | 0.803 | 40% |
+| DIE LINKE | 0.891 | 0.236 | 0.924 | 84% |
+| SPD | 0.794 | 0.407 | 0.839 | 76% |
+| FDP | 0.721 | 0.423 | 0.928 | 62% |
+| **Median** | **0.872** | **0.662** | **0.882** | **71%** |
+
+The median within-state $r$ is 0.66, roughly 0.21 lower than the overall $r$. For DIE LINKE, SPD, and FDP, within-state $r$ is below 0.43: the model gets the state levels right but struggles to differentiate counties within the same state. For AfD, CDU, and Grüne, within-state prediction is strong (above 0.90), driven by the urban-rural gradient.
+
+## Cross-validation: overall versus within-state $r$
+
+We ran 5-fold spatial CV under a strict holdout design (respondents from held-out counties excluded from estimation), evaluating both overall and within-state median $r$. The grid covers 5 covariate sets $\times$ 2 geographic RE structures = 10 specifications.
+
+| Rank | Covariates | Bezirk RE | Overall $r$ | Within-state $r$ | SD |
+|------|-----------|-----------|------------|------------------|-----|
+| 1 | none | yes | 0.811 | 0.602 | 0.055 |
+| 2 | none | no | 0.811 | 0.597 | 0.061 |
+| 3 | unemp + secondary | yes | 0.816 | 0.594 | 0.097 |
+| 4 | unemp + secondary | no | 0.816 | 0.594 | 0.097 |
+| 5 | all four | yes | 0.785 | 0.562 | 0.128 |
+| 6 | all four | no | 0.785 | 0.561 | 0.127 |
+| 7 | Abitur + purch. power | no | 0.756 | 0.533 | 0.140 |
+| 8 | Abitur + 65plus | yes | 0.803 | 0.533 | 0.085 |
+| 9 | Abitur + 65plus | no | 0.803 | 0.532 | 0.085 |
+| 10 | Abitur + purch. power | yes | 0.757 | 0.525 | 0.149 |
+
+The ranking is inverted relative to overall $r$: the specification without covariates performs best within states, while adding covariates (which boosts overall $r$ from 0.811 to 0.816) either does not help or actively hurts within-state $r$. The Regierungsbezirk RE provides a small within-state gain (+0.005) without this trade-off.
+
+## Why covariates hurt within-state prediction
+
+Consider the model for respondent $i$ in county $j$ in state $s$:
+
+$$
+\text{logit}(p_{ij}) = \mathbf{x}_i'\boldsymbol{\beta} + \delta z_j + \alpha_s + \gamma_j + \ldots
+$$
+
+where $z_j$ is a county-level covariate (e.g., unemployment rate), $\alpha_s$ is the state random effect, and $\gamma_j$ is the county random effect.
+
+### The between-within decomposition
+
+The covariate $z_j$ has both between-state and within-state variation:
+
+$$
+z_j = \bar{z}_s + (z_j - \bar{z}_s)
+$$
+
+The fixed effect $\hat{\delta}$ is estimated on pooled data, capturing a weighted average of the between-state relationship (how state-mean unemployment relates to state-mean vote share) and the within-state relationship (how a county's deviation from its state mean relates to its vote share deviation). These two relationships are often very different:
+
+- **Between states:** unemployment correlates with AfD and Linke vote share partly because East German states have both higher unemployment and structurally different voting patterns for reasons beyond unemployment (historical identity, demographics, institutions).
+- **Within states:** unemployment may relate to vote share for different, weaker reasons (local economic distress).
+
+This is the classic problem identified by Mundlak (1978). The pooled $\hat{\delta}$ is contaminated by the between-state effect, which overstates the within-state relationship.
+
+### Consequences for held-out county predictions
+
+For a held-out county $j^*$ in state $s$ (strict CV, no respondents from that county in the training data):
+
+$$
+\hat{\theta}_{j^*} \approx f\!\left(\hat{\boldsymbol{\beta}},\; \hat{\delta} z_{j^*},\; \hat{\alpha}_s,\; \gamma_{j^*} = 0\right)
+$$
+
+Within-state variation in $\hat{\theta}$ comes from two sources:
+
+1. **Demographic composition**: different distributions of age, gender, and education across counties within the same state, filtered through the demographic random effects.
+2. **Covariate signal**: $\hat{\delta}(z_{j^*} - \bar{z}_s)$, the within-state component of the covariate prediction.
+
+Source (2) uses the inflated pooled $\hat{\delta}$, so the model overreacts to within-state covariate differences. A high-unemployment county in Bavaria gets pushed toward East German voting patterns because $\hat{\delta}$ conflates "unemployment predicts AfD within a state" with "East German states have high unemployment and high AfD."
+
+### The variance allocation problem
+
+Adding $z_j$ also changes how the optimizer allocates variance across random effects. Without the covariate, $\alpha_s$ absorbs all state-level variation in the outcome. With the covariate, $\hat{\delta}\bar{z}_s$ absorbs some of that variation, so $\text{Var}(\alpha_s)$ shrinks. For counties with respondents, the county random effect $\gamma_j$ compensates. For held-out counties ($\gamma_j = 0$), the shrunken $\hat{\alpha}_s$ provides less information, and the noisy covariate signal fills the gap poorly.
+
+### Why the Bezirk RE helps instead
+
+The Regierungsbezirk random effect adds a sub-state geographic grouping (~38 levels) without introducing the between-within contamination. It captures within-state spatial structure through partial pooling: counties in the same Bezirk borrow strength from each other. For a held-out county, the Bezirk RE provides a sub-state intercept estimated from neighboring counties, which does not suffer from the pooled-effect bias of a fixed covariate.
+
+## Potential fix: the Mundlak device
+
+The standard econometric solution is to include the state mean $\bar{z}_s$ as a separate predictor alongside $z_j$:
+
+$$
+\text{logit}(p_{ij}) = \mathbf{x}_i'\boldsymbol{\beta} + \delta_W z_j + \delta_B \bar{z}_s + \alpha_s + \gamma_j
+$$
+
+This decomposes the covariate effect into within-state ($\hat{\delta}_W$) and between-state ($\hat{\delta}_B$) components. The within-state coefficient is purged of the between-state confounding, and the between-state coefficient absorbs the ecological correlation without distorting within-state predictions. This is equivalent to replacing $z_j$ with the state-demeaned covariate $z_j - \bar{z}_s$ plus a state-level control $\bar{z}_s$.
+
+Whether this improves within-state $r$ in practice is an empirical question: if the within-state effect of unemployment on vote share is genuinely weak (not just masked by between-state contamination), then the Mundlak device would correctly estimate a small $\hat{\delta}_W$, reducing the covariate's influence on within-state predictions without hurting between-state predictions. This is testable.
+
+## Summary
+
+The MRP model achieves median within-state $r$ of 0.60 under strict holdout, compared to 0.81 overall. County-level covariates improve overall predictions but hurt within-state predictions because the pooled fixed effect conflates between-state and within-state relationships. The Regierungsbezirk random effect provides a small within-state gain (+0.005) without this trade-off, by adding sub-state geographic partial pooling.
+
+The most promising next steps for within-state improvement are: (1) the Mundlak device to decompose covariate effects, (2) additional sub-state geographic random effects, and (3) accepting that within-state prediction is fundamentally harder for parties whose geographic variation is driven by state-level identity (DIE LINKE, SPD) rather than the urban-rural gradient (AfD, Grüne).
+
+## References
+
+- Mundlak, Y. (1978). "On the Pooling of Time Series and Cross Section Data." *Econometrica*, 46(1), 69--85.
+- Bell, A. and Jones, K. (2015). "Explaining Fixed Effects: Random Effects Modeling of Time-Series Cross-Sectional and Panel Data." *Political Science Research and Methods*, 3(1), 133--153.
