@@ -89,6 +89,14 @@ All UI strings are in `web/src/lib/i18n.tsx`. Categories need a `cat:` prefixed 
 - `data/harmonized/` contains individual-level data derived from restricted sources
 - `output/tables/` and `web/public/data/` contain only aggregated estimates (safe to share)
 
+### GLMM fitting alternatives
+
+Production uses `lme4::glmer()`. Faster alternatives for iteration/validation:
+- **glmmTMB**: ~2.3x faster, near-identical API (same formula syntax). Used in validation grid search (`03_spec_grid_cv.R`).
+- **MixedModels.jl** (Julia): ~5x faster, requires language switch.
+- **INLA**: ~2-3x faster, Bayesian posteriors, different API and learning curve.
+- **PQL** (`rpql`): ~10x faster, lower accuracy. Good for exploration only, not final estimates.
+
 ## Validation
 
 `output/checks/validation_bundesland.csv` has per-issue Bundesland correlations. Current median r = 0.899, median RMSE = 5.5pp. The pipeline check script (`08_check_pipeline.R`) runs 132 automated checks.
