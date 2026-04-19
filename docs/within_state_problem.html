@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>The within-state correlation problem</title>
+  <style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+</style>
+  <link href="data:text/css,body{max-width:760px;margin:2em auto;padding:0 1em;font-family:-apple-system,BlinkMacSystemFont,&#39;Segoe UI&#39;,sans-serif;line-height:1.55;color:#222}h1,h2{border-bottom:1px solid #ddd;padding-bottom:.2em}h1{font-size:1.7em}h2{font-size:1.25em;margin-top:2em}table{border-collapse:collapse;margin:1em 0}th,td{border:1px solid #ccc;padding:.35em .7em;text-align:left}th{background:#f4f4f4}code{background:#f4f4f4;padding:1px 4px;border-radius:3px;font-size:.9em}#TOC{background:#fafafa;border:1px solid #eee;padding:1em 1.5em;margin-bottom:1.5em}#TOC ul{margin:0;padding-left:1.2em}" rel="stylesheet" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">The within-state correlation problem</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#the-within-state-correlation-problem" id="toc-the-within-state-correlation-problem">The within-state
+correlation problem</a>
+<ul>
+<li><a href="#whats-going-on" id="toc-whats-going-on">What’s going
+on</a></li>
+<li><a href="#why-it-matters" id="toc-why-it-matters">Why it
+matters</a></li>
+<li><a href="#why-the-three-weak-parties-are-weak" id="toc-why-the-three-weak-parties-are-weak">Why the three weak parties
+are weak</a></li>
+<li><a href="#why-covariates-hurt-mundlak-problem" id="toc-why-covariates-hurt-mundlak-problem">Why covariates hurt
+(Mundlak problem)</a></li>
+<li><a href="#fixes-that-work-strict-5-fold-holdout-2026-04-19" id="toc-fixes-that-work-strict-5-fold-holdout-2026-04-19">Fixes that
+work (strict 5-fold holdout, 2026-04-19)</a></li>
+<li><a href="#the-production-model-implication" id="toc-the-production-model-implication">The production-model
+implication</a></li>
+<li><a href="#bottom-line" id="toc-bottom-line">Bottom line</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="the-within-state-correlation-problem">The within-state
+correlation problem</h1>
+<h2 id="whats-going-on">What’s going on</h2>
+<p>County-level MRP vote-share predictions correlate with BTW 2021
+actuals at median r = 0.87 overall. Once state-level variation is
+stripped out (demean both predictions and actuals by state), the median
+drops to 0.66. Three parties collapse much more sharply.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Party</th>
+<th>Overall r</th>
+<th>Within-state r</th>
+<th>Within-state SD in actual data</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>AfD</td>
+<td>0.97</td>
+<td>0.95</td>
+<td>2.7 pp</td>
+</tr>
+<tr class="even">
+<td>CDU/CSU</td>
+<td>0.88</td>
+<td>0.90</td>
+<td>3.8 pp</td>
+</tr>
+<tr class="odd">
+<td>Grüne</td>
+<td>0.86</td>
+<td>0.95</td>
+<td>4.5 pp</td>
+</tr>
+<tr class="even">
+<td>DIE LINKE</td>
+<td>0.89</td>
+<td>0.24</td>
+<td>1.2 pp</td>
+</tr>
+<tr class="odd">
+<td>SPD</td>
+<td>0.79</td>
+<td>0.41</td>
+<td>3.2 pp</td>
+</tr>
+<tr class="even">
+<td>FDP</td>
+<td>0.72</td>
+<td>0.42</td>
+<td>1.4 pp</td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-it-matters">Why it matters</h2>
+<p>The headline overall r is flattered by 16 state random effects. For
+400 counties, a useful model should differentiate counties within a
+state, not just sort counties across states. Median within-state r =
+0.66 says the model does this only modestly; for DIE LINKE, SPD, and FDP
+it is barely better than guessing.</p>
+<h2 id="why-the-three-weak-parties-are-weak">Why the three weak parties
+are weak</h2>
+<ul>
+<li><strong>DIE LINKE (0.24)</strong> and <strong>FDP (0.42)</strong>:
+within-state SD in actual votes is 1.2 pp and 1.4 pp. Tiny signal; any
+model fights noise. Both parties differentiate east/west but are close
+to uniform within a state. Low within-state r here is partly
+inherent.</li>
+<li><strong>SPD (0.41)</strong>: this one is genuine model weakness.
+Within-state SD = 3.2 pp, comparable to CDU (3.8 pp, r = 0.90). The
+signal exists; the model is not capturing it.</li>
+</ul>
+<h2 id="why-covariates-hurt-mundlak-problem">Why covariates hurt
+(Mundlak problem)</h2>
+<p>Pooled fixed effects on county covariates like unemployment conflate
+between-state and within-state relationships. East German states have
+both high unemployment and distinctive voting patterns, so the pooled
+coefficient borrows east/west sorting. For a held-out county the model
+then pushes within-state predictions toward “how east-German does this
+county look” rather than local deviation. Adding unemployment lifts
+overall r (0.811 to 0.816) but drops within-state r (0.60 to 0.59).</p>
+<h2 id="fixes-that-work-strict-5-fold-holdout-2026-04-19">Fixes that
+work (strict 5-fold holdout, 2026-04-19)</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Spec</th>
+<th>Overall r</th>
+<th>Within-state r</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Status quo (no covariates, Bezirk RE)</td>
+<td>0.811</td>
+<td>0.602</td>
+</tr>
+<tr class="even">
+<td>Mundlak / within-only covariates</td>
+<td>0.810</td>
+<td>0.625</td>
+</tr>
+<tr class="odd">
+<td>2017–2021 window + within-state FE</td>
+<td>0.833</td>
+<td>0.654</td>
+</tr>
+<tr class="even">
+<td>Within-state 2017 vote shares</td>
+<td>0.866</td>
+<td>0.751</td>
+</tr>
+<tr class="odd">
+<td><strong>Pooled 2017 vote shares</strong></td>
+<td><strong>0.899</strong></td>
+<td><strong>0.868</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Lagged 2017 county vote shares almost eliminate the problem. Per
+party (strict holdout): SPD 0.20 to 0.87, CDU 0.68 to 0.91, AfD 0.49 to
+0.92, Grüne 0.85 to 0.89. DIE LINKE does not improve (inherent variance
+issue).</p>
+<h2 id="the-production-model-implication">The production-model
+implication</h2>
+<p>The production model (<code>03_load_covariates.R:26</code>,
+<code>04b_fit_all_lme4.R:185</code>) uses <strong>BTW 2021</strong>
+results as covariates. Validating 2021 predictions against 2021
+covariates is the circularity the validation note was explicitly
+designed to avoid, which is why the note strips all election covariates
+and reports the much weaker within-state numbers above.</p>
+<p>Switching production covariates to <strong>BTW 2017</strong> (lagged,
+not circular) recovers within-state r of 0.87 for most parties. This is
+the single biggest available improvement, and it also restores the
+validation story’s validity.</p>
+<h2 id="bottom-line">Bottom line</h2>
+<p>Two layers:</p>
+<ol type="1">
+<li><strong>Inherent</strong> low within-state r for DIE LINKE and
+partly FDP. Their signal is mostly between-state.</li>
+<li><strong>Fixable</strong> low within-state r for SPD, CDU, AfD,
+Grüne. Current covariate specification pushes them toward east/west
+sorting.</li>
+</ol>
+<p>Moving from BTW 2021 to BTW 2017 as the production covariate block is
+the most defensible fix and closes most of the within-state gap.
+Dropping the between-state component of socioeconomic covariates
+(Mundlak-style) is a smaller but independently useful change. Nothing
+else tested comes close.</p>
+</body>
+</html>

@@ -1,0 +1,7 @@
+spec,label,median_r_overall,median_r_within
+baseline,No covariates,0.8201799333487747,0.5076858243619571
+within_socio,Within-state socio (best so far),0.8208300957299716,0.5834985743211858
+pooled_2017,Pooled 2017 vote shares,0.8985766699571754,0.8682855402779208
+within_2017,Within-state 2017 vote shares,0.8663139609451052,0.751197812819121
+within_socio_plus_2017,Within socio + within 2017,0.8618835872382254,0.7468009470353807
+within_2017_afd_only,Within 2017 AfD + turnout only,0.8333571185435416,0.5832082744595072

@@ -1,0 +1,301 @@
+issue_id,r,r_w,spec,label,fold
+vote_afd,0.7190629209972783,0.5510789769291646,baseline,No covariates,1
+vote_cdu,0.7949342514969218,0.7197018592892944,baseline,No covariates,1
+vote_fdp,0.37597099375669124,0.32623304884187954,baseline,No covariates,1
+vote_gruene,0.751362324478977,0.8441253594103085,baseline,No covariates,1
+vote_linke,0.9098905418859349,0.755751135796935,baseline,No covariates,1
+vote_spd,0.8186591108081998,0.44036621682566707,baseline,No covariates,1
+vote_afd,0.8410100664844185,0.4979807723915365,baseline,No covariates,2
+vote_cdu,0.8964498790921595,0.7569732389999697,baseline,No covariates,2
+vote_fdp,0.48705262068097427,-0.2052732495704113,baseline,No covariates,2
+vote_gruene,0.7735590701350166,0.8698779045721327,baseline,No covariates,2
+vote_linke,0.8721211233010091,0.5893899804990286,baseline,No covariates,2
+vote_spd,0.8574410090812037,0.28090035264716395,baseline,No covariates,2
+vote_afd,0.8198093826387884,0.6100794977762907,baseline,No covariates,3
+vote_cdu,0.7321261311345963,0.6088868192217612,baseline,No covariates,3
+vote_fdp,0.4695065024171317,0.19096404757783209,baseline,No covariates,3
+vote_gruene,0.8248872759642295,0.7916251121233698,baseline,No covariates,3
+vote_linke,0.87959310997748,0.6373916536069177,baseline,No covariates,3
+vote_spd,0.8215010697671203,0.4508867188143674,baseline,No covariates,3
+vote_afd,0.8321767575418049,0.6774221589768137,baseline,No covariates,4
+vote_cdu,0.8278705670775754,0.7375145228500151,baseline,No covariates,4
+vote_fdp,0.44405197191312423,-0.1273312656680809,baseline,No covariates,4
+vote_gruene,0.8678783176370855,0.8809282210110604,baseline,No covariates,4
+vote_linke,0.8703767839443172,0.6595851082738979,baseline,No covariates,4
+vote_spd,0.8597797568500513,0.06119810758550278,baseline,No covariates,4
+vote_afd,0.8391606129194067,0.46478894780783436,baseline,No covariates,5
+vote_cdu,0.6463861930308057,0.5861846407672856,baseline,No covariates,5
+vote_fdp,0.6078043473332001,0.2983321029580328,baseline,No covariates,5
+vote_gruene,0.7591241400738774,0.8497621839605927,baseline,No covariates,5
+vote_linke,0.8191769979758607,0.736723732409543,baseline,No covariates,5
+vote_spd,0.7680939203720438,0.329718949053132,baseline,No covariates,5
+vote_afd,0.7099140841030435,0.5547103748192147,baseline_bezirk,No covariates + Bezirk RE,1
+vote_cdu,0.7949342751455719,0.7197018863272604,baseline_bezirk,No covariates + Bezirk RE,1
+vote_fdp,0.49752440951943455,0.43683418894337694,baseline_bezirk,No covariates + Bezirk RE,1
+vote_gruene,0.7605827117795922,0.8620609768013466,baseline_bezirk,No covariates + Bezirk RE,1
+vote_linke,0.9098905189135125,0.75575107718136,baseline_bezirk,No covariates + Bezirk RE,1
+vote_spd,0.8188155315889033,0.4402162403228824,baseline_bezirk,No covariates + Bezirk RE,1
+vote_afd,0.8389395643485658,0.5435341842328568,baseline_bezirk,No covariates + Bezirk RE,2
+vote_cdu,0.896449947315651,0.7569726211790233,baseline_bezirk,No covariates + Bezirk RE,2
+vote_fdp,0.38036192568274246,-0.06055901317498833,baseline_bezirk,No covariates + Bezirk RE,2
+vote_gruene,0.7726555179427189,0.8178581115154362,baseline_bezirk,No covariates + Bezirk RE,2
+vote_linke,0.8721211252730477,0.5893899830890447,baseline_bezirk,No covariates + Bezirk RE,2
+vote_spd,0.8574107024709399,0.28156423628318267,baseline_bezirk,No covariates + Bezirk RE,2
+vote_afd,0.8198095339003691,0.610133030160429,baseline_bezirk,No covariates + Bezirk RE,3
+vote_cdu,0.7321266764920401,0.6088869747883765,baseline_bezirk,No covariates + Bezirk RE,3
+vote_fdp,0.3461797292175227,0.019495445086072993,baseline_bezirk,No covariates + Bezirk RE,3
+vote_gruene,0.8198660033966674,0.7825757663187385,baseline_bezirk,No covariates + Bezirk RE,3
+vote_linke,0.8795931023036523,0.6373915960510765,baseline_bezirk,No covariates + Bezirk RE,3
+vote_spd,0.8216397110810209,0.4504039967602197,baseline_bezirk,No covariates + Bezirk RE,3
+vote_afd,0.83217641784960406,0.677421746751833,baseline_bezirk,No covariates + Bezirk RE,4
+vote_cdu,0.827869362797449,0.7375146354624434,baseline_bezirk,No covariates + Bezirk RE,4
+vote_fdp,0.3867790863977482,0.14429907412175877,baseline_bezirk,No covariates + Bezirk RE,4
+vote_gruene,0.8642236238217712,0.8718783384947222,baseline_bezirk,No covariates + Bezirk RE,4
+vote_linke,0.8703751860393005,0.6595846713824265,baseline_bezirk,No covariates + Bezirk RE,4
+vote_spd,0.8597795213558798,0.06119737423052565,baseline_bezirk,No covariates + Bezirk RE,4
+vote_afd,0.8393987602344554,0.47260869576623493,baseline_bezirk,No covariates + Bezirk RE,5
+vote_cdu,0.6463859606060391,0.5861841446882441,baseline_bezirk,No covariates + Bezirk RE,5
+vote_fdp,0.6220646669540669,0.3935093345909375,baseline_bezirk,No covariates + Bezirk RE,5
+vote_gruene,0.7630516714768383,0.8320024608619845,baseline_bezirk,No covariates + Bezirk RE,5
+vote_linke,0.8191774445954588,0.7367260497632189,baseline_bezirk,No covariates + Bezirk RE,5
+vote_spd,0.7680930075513273,0.3297090230902442,baseline_bezirk,No covariates + Bezirk RE,5
+vote_afd,0.6621626355728639,0.7629996111530607,pooled,Pooled covariates,1
+vote_cdu,0.8060380484604391,0.7935644320797552,pooled,Pooled covariates,1
+vote_fdp,0.461607668436083,0.5440320996901474,pooled,Pooled covariates,1
+vote_gruene,0.7775053798979751,0.8797543133782127,pooled,Pooled covariates,1
+vote_linke,0.906417751717013,0.7581005376337527,pooled,Pooled covariates,1
+vote_spd,0.8125872129418531,0.3512514319323349,pooled,Pooled covariates,1
+vote_afd,0.8120672025815963,0.6320350366630926,pooled,Pooled covariates,2
+vote_cdu,0.9031354886748117,0.7867173023055977,pooled,Pooled covariates,2
+vote_fdp,0.51453845321095,0.163080841384067,pooled,Pooled covariates,2
+vote_gruene,0.8275525239988936,0.887220351219382,pooled,Pooled covariates,2
+vote_linke,0.871494105038002,0.4097482337340987,pooled,Pooled covariates,2
+vote_spd,0.8663615018615392,0.3886059331415124,pooled,Pooled covariates,2
+vote_afd,0.7965564403926649,0.7023309260726192,pooled,Pooled covariates,3
+vote_cdu,0.7217651083161255,0.6027357344795481,pooled,Pooled covariates,3
+vote_fdp,0.6331830813919158,0.3993148968821749,pooled,Pooled covariates,3
+vote_gruene,0.8417222622712066,0.8279750069274031,pooled,Pooled covariates,3
+vote_linke,0.8749470246521706,-0.05177925073431943,pooled,Pooled covariates,3
+vote_spd,0.829938013056429,0.46701102300024594,pooled,Pooled covariates,3
+vote_afd,0.7109833586579902,0.695209541556004,pooled,Pooled covariates,4
+vote_cdu,0.8300070107658485,0.7606233124215676,pooled,Pooled covariates,4
+vote_fdp,0.4285799042636309,0.1578839281035516,pooled,Pooled covariates,4
+vote_gruene,0.9134399088890506,0.9021409946446883,pooled,Pooled covariates,4
+vote_linke,0.8683441321952774,0.4209521562873518,pooled,Pooled covariates,4
+vote_spd,0.8743963116671196,0.25884362246937226,pooled,Pooled covariates,4
+vote_afd,0.863467260281129,0.7221517134775945,pooled,Pooled covariates,5
+vote_cdu,0.7155293857844595,0.6814796034103825,pooled,Pooled covariates,5
+vote_fdp,0.7566153876622337,0.4324611606227734,pooled,Pooled covariates,5
+vote_gruene,0.7745600361996345,0.8944140398245946,pooled,Pooled covariates,5
+vote_linke,0.81183598597000906,0.5059095330156627,pooled,Pooled covariates,5
+vote_spd,0.7795142213451547,0.4614187370953442,pooled,Pooled covariates,5
+vote_afd,0.6688518943925424,0.7763574991544833,mundlak,Mundlak decomposition,1
+vote_cdu,0.8051702918961846,0.7916483404256208,mundlak,Mundlak decomposition,1
+vote_fdp,0.5254992605778834,0.5807625871133701,mundlak,Mundlak decomposition,1
+vote_gruene,0.7306453373268483,0.8865457467457973,mundlak,Mundlak decomposition,1
+vote_linke,0.8517244122407057,0.7740696119743581,mundlak,Mundlak decomposition,1
+vote_spd,0.74551538120795,0.4092962852269781,mundlak,Mundlak decomposition,1
+vote_afd,0.80467785918605494,0.6351749560113827,mundlak,Mundlak decomposition,2
+vote_cdu,0.8995837620358218,0.7836128441788961,mundlak,Mundlak decomposition,2
+vote_fdp,0.34251698218321586,0.19437339642416673,mundlak,Mundlak decomposition,2
+vote_gruene,0.8393339000232094,0.8907555473672779,mundlak,Mundlak decomposition,2
+vote_linke,0.8695017075701575,0.4177458989803265,mundlak,Mundlak decomposition,2
+vote_spd,0.8702810517625892,0.3942166556796214,mundlak,Mundlak decomposition,2
+vote_afd,0.7692639257000079,0.6763822609010168,mundlak,Mundlak decomposition,3
+vote_cdu,0.7180684410557413,0.5959449922215857,mundlak,Mundlak decomposition,3
+vote_fdp,0.54099070543585,0.39643823641813436,mundlak,Mundlak decomposition,3
+vote_gruene,0.8407722799449944,0.8268424857909022,mundlak,Mundlak decomposition,3
+vote_linke,0.8752285129116115,-0.08385294558740052,mundlak,Mundlak decomposition,3
+vote_spd,0.8440062082827611,0.47678892358793096,mundlak,Mundlak decomposition,3
+vote_afd,0.685424407989535,0.6834501719098877,mundlak,Mundlak decomposition,4
+vote_cdu,0.8246809089354863,0.7564904692302167,mundlak,Mundlak decomposition,4
+vote_fdp,0.3427193090112723,0.20360482861842566,mundlak,Mundlak decomposition,4
+vote_gruene,0.912016658744313,0.9032433288835926,mundlak,Mundlak decomposition,4
+vote_linke,0.8773068992769314,0.4894039281922299,mundlak,Mundlak decomposition,4
+vote_spd,0.8804948994775333,0.3302115597804708,mundlak,Mundlak decomposition,4
+vote_afd,0.8581077727501827,0.7080147426147119,mundlak,Mundlak decomposition,5
+vote_cdu,0.7103620473618527,0.6893901198109113,mundlak,Mundlak decomposition,5
+vote_fdp,0.6188659123724873,0.4102550127815273,mundlak,Mundlak decomposition,5
+vote_gruene,0.7724818341925856,0.8903417013975063,mundlak,Mundlak decomposition,5
+vote_linke,0.810113163297742,0.5384948353181045,mundlak,Mundlak decomposition,5
+vote_spd,0.7876101208119326,0.49979917556090814,mundlak,Mundlak decomposition,5
+vote_afd,0.6417105252082792,0.7702232019029532,within_only,Within-state covariates only,1
+vote_cdu,0.8064720884759933,0.7947252085356087,within_only,Within-state covariates only,1
+vote_fdp,0.5235089007867497,0.5698530375730715,within_only,Within-state covariates only,1
+vote_gruene,0.7793849510050458,0.883865382227306,within_only,Within-state covariates only,1
+vote_linke,0.8923053650392399,0.779964786307549,within_only,Within-state covariates only,1
+vote_spd,0.8227198832745766,0.3997968553029918,within_only,Within-state covariates only,1
+vote_afd,0.8019220487700001,0.6358953257283123,within_only,Within-state covariates only,2
+vote_cdu,0.8999872461260526,0.7864849041969657,within_only,Within-state covariates only,2
+vote_fdp,0.45591857509756895,0.15703644615664042,within_only,Within-state covariates only,2
+vote_gruene,0.8263634299053036,0.8917175121710119,within_only,Within-state covariates only,2
+vote_linke,0.8721254947384185,0.4701759293117585,within_only,Within-state covariates only,2
+vote_spd,0.8623161024143748,0.3338131083568538,within_only,Within-state covariates only,2
+vote_afd,0.763090637795264,0.6764666570206326,within_only,Within-state covariates only,3
+vote_cdu,0.7458541274265504,0.6209404146484533,within_only,Within-state covariates only,3
+vote_fdp,0.4714688965635247,0.3751802556137301,within_only,Within-state covariates only,3
+vote_gruene,0.8404261132326404,0.8282128758994227,within_only,Within-state covariates only,3
+vote_linke,0.8776364960351668,0.07836461615697522,within_only,Within-state covariates only,3
+vote_spd,0.8183325709559353,0.4780274026784654,within_only,Within-state covariates only,3
+vote_afd,0.6823040673403965,0.6850390661229021,within_only,Within-state covariates only,4
+vote_cdu,0.8226877965573528,0.7603528470750563,within_only,Within-state covariates only,4
+vote_fdp,0.40362075668449143,0.1757939273673081,within_only,Within-state covariates only,4
+vote_gruene,0.9126561355575621,0.9033605902114493,within_only,Within-state covariates only,4
+vote_linke,0.878415794365547,0.5577802597375024,within_only,Within-state covariates only,4
+vote_spd,0.8671560701705314,0.24111054692539177,within_only,Within-state covariates only,4
+vote_afd,0.8592556695255459,0.7098713252328795,within_only,Within-state covariates only,5
+vote_cdu,0.6949991625237045,0.6847355835440645,within_only,Within-state covariates only,5
+vote_fdp,0.5188948427653587,0.3891377121589907,within_only,Within-state covariates only,5
+vote_gruene,0.7695406677655705,0.8932461523313369,within_only,Within-state covariates only,5
+vote_linke,0.8034594095816177,0.5710377364914503,within_only,Within-state covariates only,5
+vote_spd,0.7769619364496594,0.4630808305082759,within_only,Within-state covariates only,5
+vote_afd,0.6688455902223293,0.7763601193888219,mundlak_bezirk,Mundlak + Bezirk RE,1
+vote_cdu,0.8051702836094847,0.7916483480588333,mundlak_bezirk,Mundlak + Bezirk RE,1
+vote_fdp,0.5631566449390726,0.6223769947860592,mundlak_bezirk,Mundlak + Bezirk RE,1
+vote_gruene,0.7364739766119325,0.8948973911823354,mundlak_bezirk,Mundlak + Bezirk RE,1
+vote_linke,0.8517194017120562,0.7740646151219932,mundlak_bezirk,Mundlak + Bezirk RE,1
+vote_spd,0.7455156845717302,0.4092961425270372,mundlak_bezirk,Mundlak + Bezirk RE,1
+vote_afd,0.804677553482351,0.6351747236991782,mundlak_bezirk,Mundlak + Bezirk RE,2
+vote_cdu,0.899584826680073,0.7836130694104297,mundlak_bezirk,Mundlak + Bezirk RE,2
+vote_fdp,0.37594675998178106,0.21341226196432686,mundlak_bezirk,Mundlak + Bezirk RE,2
+vote_gruene,0.8309439330187639,0.8238342654669485,mundlak_bezirk,Mundlak + Bezirk RE,2
+vote_linke,0.869501659833838,0.417745577240002,mundlak_bezirk,Mundlak + Bezirk RE,2
+vote_spd,0.870280397306993,0.3942123836949656,mundlak_bezirk,Mundlak + Bezirk RE,2
+vote_afd,0.7692611278161213,0.6763786636599253,mundlak_bezirk,Mundlak + Bezirk RE,3
+vote_cdu,0.7180682233481989,0.5959448982868308,mundlak_bezirk,Mundlak + Bezirk RE,3
+vote_fdp,0.48780208055920893,0.354473146261631,mundlak_bezirk,Mundlak + Bezirk RE,3
+vote_gruene,0.8373147183263415,0.8209718440451074,mundlak_bezirk,Mundlak + Bezirk RE,3
+vote_linke,0.8752283716648704,-0.08385564152614813,mundlak_bezirk,Mundlak + Bezirk RE,3
+vote_spd,0.8440054081822865,0.4767897985866013,mundlak_bezirk,Mundlak + Bezirk RE,3
+vote_afd,0.6854245456366184,0.6834501737671737,mundlak_bezirk,Mundlak + Bezirk RE,4
+vote_cdu,0.8246815946689039,0.7564910550688692,mundlak_bezirk,Mundlak + Bezirk RE,4
+vote_fdp,0.3196068215682324,0.24617815478528524,mundlak_bezirk,Mundlak + Bezirk RE,4
+vote_gruene,0.9089668206061151,0.8936937288346454,mundlak_bezirk,Mundlak + Bezirk RE,4
+vote_linke,0.8773093744688757,0.4894371683899825,mundlak_bezirk,Mundlak + Bezirk RE,4
+vote_spd,0.8804943654960995,0.3302042733231802,mundlak_bezirk,Mundlak + Bezirk RE,4
+vote_afd,0.8580896819264452,0.7079986194507358,mundlak_bezirk,Mundlak + Bezirk RE,5
+vote_cdu,0.710360641273989,0.6893877104558186,mundlak_bezirk,Mundlak + Bezirk RE,5
+vote_fdp,0.6272308384150697,0.46484218340911787,mundlak_bezirk,Mundlak + Bezirk RE,5
+vote_gruene,0.7763218417597423,0.882745676327931,mundlak_bezirk,Mundlak + Bezirk RE,5
+vote_linke,0.810112672775178,0.538489826524441,mundlak_bezirk,Mundlak + Bezirk RE,5
+vote_spd,0.7876105518093838,0.4997987947463272,mundlak_bezirk,Mundlak + Bezirk RE,5
+vote_afd,0.6417104122936396,0.7702232027073537,within_bezirk,Within-state + Bezirk RE,1
+vote_cdu,0.8064721041858327,0.7947251930086978,within_bezirk,Within-state + Bezirk RE,1
+vote_fdp,0.5510075845673802,0.6466289126640731,within_bezirk,Within-state + Bezirk RE,1
+vote_gruene,0.7879430097736697,0.8949525512982046,within_bezirk,Within-state + Bezirk RE,1
+vote_linke,0.8923053654937593,0.7799647544870559,within_bezirk,Within-state + Bezirk RE,1
+vote_spd,0.822719860231828,0.39980038239124366,within_bezirk,Within-state + Bezirk RE,1
+vote_afd,0.8019218953055821,0.635894977605542,within_bezirk,Within-state + Bezirk RE,2
+vote_cdu,0.8999877035543988,0.7864845868783561,within_bezirk,Within-state + Bezirk RE,2
+vote_fdp,0.40583663347862586,0.1820836580674948,within_bezirk,Within-state + Bezirk RE,2
+vote_gruene,0.8197231605516907,0.8240576269030102,within_bezirk,Within-state + Bezirk RE,2
+vote_linke,0.8721254973796885,0.47017593598417895,within_bezirk,Within-state + Bezirk RE,2
+vote_spd,0.8623180159376661,0.33383451471297665,within_bezirk,Within-state + Bezirk RE,2
+vote_afd,0.7630905778721114,0.6764666007166834,within_bezirk,Within-state + Bezirk RE,3
+vote_cdu,0.745854150052021,0.6209402499985487,within_bezirk,Within-state + Bezirk RE,3
+vote_fdp,0.37777846041395374,0.3079477599597817,within_bezirk,Within-state + Bezirk RE,3
+vote_gruene,0.8366078911969194,0.821435484195169,within_bezirk,Within-state + Bezirk RE,3
+vote_linke,0.8776363915217389,0.07836187165381342,within_bezirk,Within-state + Bezirk RE,3
+vote_spd,0.8183309820906998,0.4780272303059989,within_bezirk,Within-state + Bezirk RE,3
+vote_afd,0.6823036426875952,0.685038816744138,within_bezirk,Within-state + Bezirk RE,4
+vote_cdu,0.8226878735903613,0.7603527718855789,within_bezirk,Within-state + Bezirk RE,4
+vote_fdp,0.3618350837715889,0.2753828221611233,within_bezirk,Within-state + Bezirk RE,4
+vote_gruene,0.9091667486166468,0.8928171848731913,within_bezirk,Within-state + Bezirk RE,4
+vote_linke,0.8784942395833301,0.5586577233899824,within_bezirk,Within-state + Bezirk RE,4
+vote_spd,0.8671559988153261,0.2411107044062585,within_bezirk,Within-state + Bezirk RE,4
+vote_afd,0.859261069613328,0.7098747504198908,within_bezirk,Within-state + Bezirk RE,5
+vote_cdu,0.6949999436366712,0.6847381708655855,within_bezirk,Within-state + Bezirk RE,5
+vote_fdp,0.5420258746370183,0.44957483132522236,within_bezirk,Within-state + Bezirk RE,5
+vote_gruene,0.7736131937688744,0.8844137663840264,within_bezirk,Within-state + Bezirk RE,5
+vote_linke,0.8034592156228688,0.5710353196197054,within_bezirk,Within-state + Bezirk RE,5
+vote_spd,0.7769604457525058,0.4630771265768464,within_bezirk,Within-state + Bezirk RE,5
+vote_afd,0.6381447505760277,0.7627253324312656,pooled_abitur,Pooled + Abitur share,1
+vote_cdu,0.7918806555004534,0.7492120189321736,pooled_abitur,Pooled + Abitur share,1
+vote_fdp,0.45492161664074793,0.5512157282494373,pooled_abitur,Pooled + Abitur share,1
+vote_gruene,0.7769214879525796,0.8791130475356598,pooled_abitur,Pooled + Abitur share,1
+vote_linke,0.9067136068002898,0.7496830584033253,pooled_abitur,Pooled + Abitur share,1
+vote_spd,0.7670917923013849,0.12699725671816903,pooled_abitur,Pooled + Abitur share,1
+vote_afd,0.8106975652550583,0.6297860152924897,pooled_abitur,Pooled + Abitur share,2
+vote_cdu,0.881304477809307,0.7162581189343955,pooled_abitur,Pooled + Abitur share,2
+vote_fdp,0.45001187311004753,0.0994369464467581,pooled_abitur,Pooled + Abitur share,2
+vote_gruene,0.8431791695420003,0.9047346512013128,pooled_abitur,Pooled + Abitur share,2
+vote_linke,0.8570933313134523,0.2690221271594798,pooled_abitur,Pooled + Abitur share,2
+vote_spd,0.8684690873830969,0.38283718124574845,pooled_abitur,Pooled + Abitur share,2
+vote_afd,0.7969788311328639,0.7107968905903183,pooled_abitur,Pooled + Abitur share,3
+vote_cdu,0.7148468367858343,0.5665152935440139,pooled_abitur,Pooled + Abitur share,3
+vote_fdp,0.6308081912747303,0.39945500565566955,pooled_abitur,Pooled + Abitur share,3
+vote_gruene,0.8491409992864039,0.8458200358066258,pooled_abitur,Pooled + Abitur share,3
+vote_linke,0.8802419936149581,0.12785219997511288,pooled_abitur,Pooled + Abitur share,3
+vote_spd,0.8256684594788248,0.43940741474131173,pooled_abitur,Pooled + Abitur share,3
+vote_afd,0.7139362626469291,0.6998666686756837,pooled_abitur,Pooled + Abitur share,4
+vote_cdu,0.8192309216058243,0.7140439781681122,pooled_abitur,Pooled + Abitur share,4
+vote_fdp,0.4211761403311186,0.15767280097083866,pooled_abitur,Pooled + Abitur share,4
+vote_gruene,0.9139260250584693,0.9029416583571652,pooled_abitur,Pooled + Abitur share,4
+vote_linke,0.8688836981860875,0.4230661632791032,pooled_abitur,Pooled + Abitur share,4
+vote_spd,0.874696430868982,0.2645338074875136,pooled_abitur,Pooled + Abitur share,4
+vote_afd,0.8760649839097675,0.7386207560948069,pooled_abitur,Pooled + Abitur share,5
+vote_cdu,0.7080709127436924,0.6582426760202007,pooled_abitur,Pooled + Abitur share,5
+vote_fdp,0.7289265521344669,0.4100911816943653,pooled_abitur,Pooled + Abitur share,5
+vote_gruene,0.7750611373142059,0.895450997318192,pooled_abitur,Pooled + Abitur share,5
+vote_linke,0.8165610591635437,0.5332789628048796,pooled_abitur,Pooled + Abitur share,5
+vote_spd,0.7835851346423811,0.42657725304228,pooled_abitur,Pooled + Abitur share,5
+vote_afd,0.6655157790225492,0.7759958899660094,mundlak_abitur,Mundlak + Abitur share,1
+vote_cdu,0.7743447420411779,0.6991852571255155,mundlak_abitur,Mundlak + Abitur share,1
+vote_fdp,0.49440404472955274,0.5855449810028402,mundlak_abitur,Mundlak + Abitur share,1
+vote_gruene,0.671204041287948,0.8803456753247162,mundlak_abitur,Mundlak + Abitur share,1
+vote_linke,0.80627680009671,0.7699632527104214,mundlak_abitur,Mundlak + Abitur share,1
+vote_spd,0.7540414401129818,0.2832813223815577,mundlak_abitur,Mundlak + Abitur share,1
+vote_afd,0.7922964821086588,0.6195662726731105,mundlak_abitur,Mundlak + Abitur share,2
+vote_cdu,0.877550997220808,0.7053995259447211,mundlak_abitur,Mundlak + Abitur share,2
+vote_fdp,0.3146463931358678,0.15205006471041815,mundlak_abitur,Mundlak + Abitur share,2
+vote_gruene,0.8495765659252368,0.9064920039550018,mundlak_abitur,Mundlak + Abitur share,2
+vote_linke,0.8545647507284043,0.27337672001837404,mundlak_abitur,Mundlak + Abitur share,2
+vote_spd,0.8693046239111217,0.40251832171367735,mundlak_abitur,Mundlak + Abitur share,2
+vote_afd,0.7654798322509662,0.6586700842345831,mundlak_abitur,Mundlak + Abitur share,3
+vote_cdu,0.6680386276466446,0.5119581947381343,mundlak_abitur,Mundlak + Abitur share,3
+vote_fdp,0.5300279292144209,0.3995272166188563,mundlak_abitur,Mundlak + Abitur share,3
+vote_gruene,0.8437410308004877,0.8381581139203907,mundlak_abitur,Mundlak + Abitur share,3
+vote_linke,0.8798466314526611,0.07897139686575247,mundlak_abitur,Mundlak + Abitur share,3
+vote_spd,0.8371687670733754,0.37937918078167027,mundlak_abitur,Mundlak + Abitur share,3
+vote_afd,0.6797413066128786,0.672604298592477,mundlak_abitur,Mundlak + Abitur share,4
+vote_cdu,0.8056620776427224,0.7046054566196202,mundlak_abitur,Mundlak + Abitur share,4
+vote_fdp,0.33744161055521316,0.2048304430739243,mundlak_abitur,Mundlak + Abitur share,4
+vote_gruene,0.9106524689904857,0.901777711906497,mundlak_abitur,Mundlak + Abitur share,4
+vote_linke,0.8769831209670321,0.48778747020002394,mundlak_abitur,Mundlak + Abitur share,4
+vote_spd,0.8770466946977955,0.4052117677488994,mundlak_abitur,Mundlak + Abitur share,4
+vote_afd,0.8655444781804628,0.7216678625368501,mundlak_abitur,Mundlak + Abitur share,5
+vote_cdu,0.6846222940397334,0.6554960500546771,mundlak_abitur,Mundlak + Abitur share,5
+vote_fdp,0.59372585950341,0.41065128009013435,mundlak_abitur,Mundlak + Abitur share,5
+vote_gruene,0.7646167194323668,0.8878069772554001,mundlak_abitur,Mundlak + Abitur share,5
+vote_linke,0.8107599807996048,0.5695816764458949,mundlak_abitur,Mundlak + Abitur share,5
+vote_spd,0.7908460334955328,0.47639887072201303,mundlak_abitur,Mundlak + Abitur share,5
+vote_afd,0.6655229085063188,0.7759984905791372,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,1
+vote_cdu,0.7743447020333885,0.6991851738729098,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,1
+vote_fdp,0.4944096301454365,0.5855529838533636,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,1
+vote_gruene,0.6770946356664055,0.8882379294685679,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,1
+vote_linke,0.806125450141813,0.769620915109852,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,1
+vote_spd,0.754041472388654,0.2832817259773296,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,1
+vote_afd,0.7922962130832758,0.6195674913139071,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,2
+vote_cdu,0.8775520416312579,0.7054027328122463,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,2
+vote_fdp,0.34993072959872007,0.18028922610694958,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,2
+vote_gruene,0.8445126065494002,0.8530702513278058,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,2
+vote_linke,0.8545647687358648,0.2733773015890542,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,2
+vote_spd,0.8693030966842893,0.4025075878525547,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,2
+vote_afd,0.7654804213238505,0.6586702810494666,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,3
+vote_cdu,0.6680388641344288,0.51195825811999085,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,3
+vote_fdp,0.4719556389862323,0.354635244168772,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,3
+vote_gruene,0.8387926388088023,0.8290548131361961,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,3
+vote_linke,0.8798466328673108,0.0789714073691536,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,3
+vote_spd,0.8371690658413907,0.37937862156944563,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,3
+vote_afd,0.6797411606656445,0.6726040859717739,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,4
+vote_cdu,0.8056626516935953,0.7046053980350132,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,4
+vote_fdp,0.32175197595671984,0.242921165472617,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,4
+vote_gruene,0.9073142616568256,0.8920213057110375,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,4
+vote_linke,0.8769856033155966,0.4878263402841588,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,4
+vote_spd,0.8770467108482942,0.40521257923693665,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,4
+vote_afd,0.8655445151336482,0.7216678796689248,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,5
+vote_cdu,0.6846189980322717,0.6554939127779397,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,5
+vote_fdp,0.6093022606383562,0.4604797194430826,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,5
+vote_gruene,0.7683625716275696,0.8800500832422526,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,5
+vote_linke,0.8107590145922565,0.5695778528014015,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,5
+vote_spd,0.7908457317802532,0.4763987382441691,mundlak_abitur_bezirk,Mundlak + Abitur + Bezirk RE,5

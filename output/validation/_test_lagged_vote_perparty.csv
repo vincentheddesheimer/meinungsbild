@@ -1,0 +1,181 @@
+issue_id,fold,r,r_w,spec,label
+vote_afd,1,0.8710806772305049,0.4549704249688495,baseline,No covariates
+vote_afd,2,0.8783735224626533,0.4396698161522406,baseline,No covariates
+vote_afd,3,0.8555165566445607,0.5519566301517498,baseline,No covariates
+vote_afd,4,0.7701491013822784,0.6234145202202069,baseline,No covariates
+vote_afd,5,0.860894301467547,0.4403201816033711,baseline,No covariates
+vote_cdu,1,0.7892743245314753,0.7287565959223751,baseline,No covariates
+vote_cdu,2,0.9112202365259555,0.723200066232954,baseline,No covariates
+vote_cdu,3,0.7789840414945295,0.5759166626770237,baseline,No covariates
+vote_cdu,4,0.8610803632587829,0.6720086607588718,baseline,No covariates
+vote_cdu,5,0.7107517351280895,0.5779806170713685,baseline,No covariates
+vote_fdp,1,0.43958134931406306,0.2513693544770089,baseline,No covariates
+vote_fdp,2,0.42527492630153346,0.07431422759750753,baseline,No covariates
+vote_fdp,3,0.5410675341228992,0.15402461094105724,baseline,No covariates
+vote_fdp,4,0.6056898555273665,0.03262473487277461,baseline,No covariates
+vote_fdp,5,0.5429222374545648,0.1791260427715017,baseline,No covariates
+vote_gruene,1,0.7489207667016039,0.7952369418022336,baseline,No covariates
+vote_gruene,2,0.7715416079345042,0.7954696380172088,baseline,No covariates
+vote_gruene,3,0.8170441101571169,0.7927411117652595,baseline,No covariates
+vote_gruene,4,0.8811893274206436,0.838236070733623,baseline,No covariates
+vote_gruene,5,0.7666633094408046,0.8007500740286685,baseline,No covariates
+vote_linke,1,0.9266875210110067,0.7494209255923795,baseline,No covariates
+vote_linke,2,0.9071699749015376,0.4700206623273917,baseline,No covariates
+vote_linke,3,0.9230894838583029,0.4689062877334915,baseline,No covariates
+vote_linke,4,0.8959704287017112,0.500541062956132,baseline,No covariates
+vote_linke,5,0.8661429992047265,0.6926671825556757,baseline,No covariates
+vote_spd,1,0.8352188393297523,0.26538935091076904,baseline,No covariates
+vote_spd,2,0.8626560455584819,0.20051562301288436,baseline,No covariates
+vote_spd,3,0.8520822985057426,0.2742309256762337,baseline,No covariates
+vote_spd,4,0.8617162062736985,0.0016329540241993522,baseline,No covariates
+vote_spd,5,0.7642707047011695,0.24116796306227076,baseline,No covariates
+vote_afd,1,0.8535227307859767,0.6615955213427577,within_socio,Within-state socio (best so far)
+vote_afd,2,0.8817581307146635,0.6160616293571268,within_socio,Within-state socio (best so far)
+vote_afd,3,0.8471322512616049,0.6946015203360442,within_socio,Within-state socio (best so far)
+vote_afd,4,0.6904557604986189,0.6714819794753618,within_socio,Within-state socio (best so far)
+vote_afd,5,0.892214203849345,0.6688689167416889,within_socio,Within-state socio (best so far)
+vote_cdu,1,0.8027648363190589,0.7748038473822425,within_socio,Within-state socio (best so far)
+vote_cdu,2,0.9089238401260363,0.7340669621299718,within_socio,Within-state socio (best so far)
+vote_cdu,3,0.7731685051567158,0.5631768076787582,within_socio,Within-state socio (best so far)
+vote_cdu,4,0.8500920510734046,0.6712162745883882,within_socio,Within-state socio (best so far)
+vote_cdu,5,0.7454277826594612,0.6592813201286427,within_socio,Within-state socio (best so far)
+vote_fdp,1,0.5107486060265986,0.5448951284442444,within_socio,Within-state socio (best so far)
+vote_fdp,2,0.4015546971590432,0.24479436636529184,within_socio,Within-state socio (best so far)
+vote_fdp,3,0.5255145185985749,0.4299957981003002,within_socio,Within-state socio (best so far)
+vote_fdp,4,0.4487113616513362,0.23962076204030305,within_socio,Within-state socio (best so far)
+vote_fdp,5,0.4828110097146801,0.49742533627987945,within_socio,Within-state socio (best so far)
+vote_gruene,1,0.7736053906207764,0.8538195813187358,within_socio,Within-state socio (best so far)
+vote_gruene,2,0.8121213881411227,0.8186359069434538,within_socio,Within-state socio (best so far)
+vote_gruene,3,0.8252520810064136,0.8026224541665025,within_socio,Within-state socio (best so far)
+vote_gruene,4,0.9138472938827035,0.8818208609841724,within_socio,Within-state socio (best so far)
+vote_gruene,5,0.7851669280519455,0.857560695206003,within_socio,Within-state socio (best so far)
+vote_linke,1,0.9058963512623057,0.6917170211231513,within_socio,Within-state socio (best so far)
+vote_linke,2,0.9129412704991167,0.5261789294623462,within_socio,Within-state socio (best so far)
+vote_linke,3,0.9219528174881316,0.39036989139608,within_socio,Within-state socio (best so far)
+vote_linke,4,0.8877694490955823,0.4545642414074286,within_socio,Within-state socio (best so far)
+vote_linke,5,0.8404686149734503,0.6147254290725763,within_socio,Within-state socio (best so far)
+vote_spd,1,0.8376429646178026,0.292894389644898,within_socio,Within-state socio (best so far)
+vote_spd,2,0.8644483038745091,0.25593886638838825,within_socio,Within-state socio (best so far)
+vote_spd,3,0.8503906872813901,0.35209361112923543,within_socio,Within-state socio (best so far)
+vote_spd,4,0.8641498932834139,0.12067743766313363,within_socio,Within-state socio (best so far)
+vote_spd,5,0.7744113925639289,0.3264563190418795,within_socio,Within-state socio (best so far)
+vote_afd,1,0.9628196223493616,0.9531285440919649,pooled_2017,Pooled 2017 vote shares
+vote_afd,2,0.9602784860239405,0.9420245395634456,pooled_2017,Pooled 2017 vote shares
+vote_afd,3,0.9113147168241048,0.8551785793661096,pooled_2017,Pooled 2017 vote shares
+vote_afd,4,0.9430652128895036,0.9526660105453822,pooled_2017,Pooled 2017 vote shares
+vote_afd,5,0.9705775465798132,0.8907890755836979,pooled_2017,Pooled 2017 vote shares
+vote_cdu,1,0.8839571029449337,0.9262921643489204,pooled_2017,Pooled 2017 vote shares
+vote_cdu,2,0.938878000435843,0.8949975596755285,pooled_2017,Pooled 2017 vote shares
+vote_cdu,3,0.8807046661428468,0.8967694592764672,pooled_2017,Pooled 2017 vote shares
+vote_cdu,4,0.9269004436112097,0.8811300915804868,pooled_2017,Pooled 2017 vote shares
+vote_cdu,5,0.8862983945057391,0.9282328467832959,pooled_2017,Pooled 2017 vote shares
+vote_fdp,1,0.4218858517175212,0.5192179652843333,pooled_2017,Pooled 2017 vote shares
+vote_fdp,2,0.4908216934638841,0.21181324631627188,pooled_2017,Pooled 2017 vote shares
+vote_fdp,3,0.6034170077435448,0.5096136530368022,pooled_2017,Pooled 2017 vote shares
+vote_fdp,4,0.5303054071027136,0.4343938853979989,pooled_2017,Pooled 2017 vote shares
+vote_fdp,5,0.752830572010887,0.5321209429623852,pooled_2017,Pooled 2017 vote shares
+vote_gruene,1,0.7950338100038009,0.9002658855736988,pooled_2017,Pooled 2017 vote shares
+vote_gruene,2,0.887057001118802,0.8900493050743714,pooled_2017,Pooled 2017 vote shares
+vote_gruene,3,0.9120685761376757,0.8695055524589,pooled_2017,Pooled 2017 vote shares
+vote_gruene,4,0.9461650002011647,0.9222522618635302,pooled_2017,Pooled 2017 vote shares
+vote_gruene,5,0.8128742248663482,0.885046067966796,pooled_2017,Pooled 2017 vote shares
+vote_linke,1,0.9010356326149858,0.5446245645141166,pooled_2017,Pooled 2017 vote shares
+vote_linke,2,0.914950424687307,0.6206902696872565,pooled_2017,Pooled 2017 vote shares
+vote_linke,3,0.9211089450224957,0.39737376717490386,pooled_2017,Pooled 2017 vote shares
+vote_linke,4,0.899551698837206,0.5602066221807588,pooled_2017,Pooled 2017 vote shares
+vote_linke,5,0.8629952556139755,0.6479562201334492,pooled_2017,Pooled 2017 vote shares
+vote_spd,1,0.9470024494470202,0.9154077118591148,pooled_2017,Pooled 2017 vote shares
+vote_spd,2,0.9364643179974956,0.8753303616588849,pooled_2017,Pooled 2017 vote shares
+vote_spd,3,0.9166120284634682,0.8672557659525086,pooled_2017,Pooled 2017 vote shares
+vote_spd,4,0.9302809358089715,0.778145316697296,pooled_2017,Pooled 2017 vote shares
+vote_spd,5,0.9080517155635044,0.9304664383733139,pooled_2017,Pooled 2017 vote shares
+vote_afd,1,0.8019270974269379,0.7137981563406297,within_2017,Within-state 2017 vote shares
+vote_afd,2,0.9178235614123214,0.8196949039163668,within_2017,Within-state 2017 vote shares
+vote_afd,3,0.8280160501816471,0.7338391107765201,within_2017,Within-state 2017 vote shares
+vote_afd,4,0.7155749646664293,0.8210301174473219,within_2017,Within-state 2017 vote shares
+vote_afd,5,0.9104630086883049,0.779782148493021,within_2017,Within-state 2017 vote shares
+vote_cdu,1,0.824966175729124,0.8976192821430176,within_2017,Within-state 2017 vote shares
+vote_cdu,2,0.9216501192747805,0.8403555582526392,within_2017,Within-state 2017 vote shares
+vote_cdu,3,0.8434529487791401,0.8151633616135564,within_2017,Within-state 2017 vote shares
+vote_cdu,4,0.8975452147345608,0.8114897042638332,within_2017,Within-state 2017 vote shares
+vote_cdu,5,0.8626312953038068,0.8823612202660849,within_2017,Within-state 2017 vote shares
+vote_fdp,1,0.5908407273547629,0.6803747078521198,within_2017,Within-state 2017 vote shares
+vote_fdp,2,0.45570294811906586,0.2663175156795049,within_2017,Within-state 2017 vote shares
+vote_fdp,3,0.4633267616161318,0.5943955404067136,within_2017,Within-state 2017 vote shares
+vote_fdp,4,0.5338777868626744,0.45304175497188215,within_2017,Within-state 2017 vote shares
+vote_fdp,5,0.6050630954037782,0.6454251515823611,within_2017,Within-state 2017 vote shares
+vote_gruene,1,0.8068148385812204,0.954730872776652,within_2017,Within-state 2017 vote shares
+vote_gruene,2,0.8585137395645951,0.9227079212373993,within_2017,Within-state 2017 vote shares
+vote_gruene,3,0.8985776702676519,0.934987090020309,within_2017,Within-state 2017 vote shares
+vote_gruene,4,0.9589576435230551,0.9503587144205868,within_2017,Within-state 2017 vote shares
+vote_gruene,5,0.825651432962694,0.9227702934209934,within_2017,Within-state 2017 vote shares
+vote_linke,1,0.906981727838851,0.7839650581661797,within_2017,Within-state 2017 vote shares
+vote_linke,2,0.9321017739687912,0.7656283488317568,within_2017,Within-state 2017 vote shares
+vote_linke,3,0.9264251969414748,0.5422781614039552,within_2017,Within-state 2017 vote shares
+vote_linke,4,0.917262465357903,0.7210198074647624,within_2017,Within-state 2017 vote shares
+vote_linke,5,0.8691447635042385,0.7067489756864753,within_2017,Within-state 2017 vote shares
+vote_spd,1,0.9090281265594368,0.8152566174515985,within_2017,Within-state 2017 vote shares
+vote_spd,2,0.9263576508962678,0.7995525497746045,within_2017,Within-state 2017 vote shares
+vote_spd,3,0.9157220174888333,0.7710768517472731,within_2017,Within-state 2017 vote shares
+vote_spd,4,0.9218085249569709,0.6978831766068311,within_2017,Within-state 2017 vote shares
+vote_spd,5,0.8943017942635887,0.7712586772281455,within_2017,Within-state 2017 vote shares
+vote_afd,1,0.7961613130881845,0.6918627750462875,within_socio_plus_2017,Within socio + within 2017
+vote_afd,2,0.9141002812712987,0.8228348662542178,within_socio_plus_2017,Within socio + within 2017
+vote_afd,3,0.8230130132796588,0.729857752788443,within_socio_plus_2017,Within socio + within 2017
+vote_afd,4,0.7131901560770373,0.8209092060881095,within_socio_plus_2017,Within socio + within 2017
+vote_afd,5,0.9222425379159958,0.7863022611679749,within_socio_plus_2017,Within socio + within 2017
+vote_cdu,1,0.8245149682087055,0.8927578345773263,within_socio_plus_2017,Within socio + within 2017
+vote_cdu,2,0.9119108947312512,0.8232246448887139,within_socio_plus_2017,Within socio + within 2017
+vote_cdu,3,0.8147553224729926,0.8072406629855502,within_socio_plus_2017,Within socio + within 2017
+vote_cdu,4,0.8996016949427493,0.8184348459320575,within_socio_plus_2017,Within socio + within 2017
+vote_cdu,5,0.8639278490837305,0.8830227792602674,within_socio_plus_2017,Within socio + within 2017
+vote_fdp,1,0.4760377643645019,0.6350108252277233,within_socio_plus_2017,Within socio + within 2017
+vote_fdp,2,0.4326734026803417,0.28131836056273946,within_socio_plus_2017,Within socio + within 2017
+vote_fdp,3,0.4431442896792953,0.6052636021599682,within_socio_plus_2017,Within socio + within 2017
+vote_fdp,4,0.4667131000439935,0.4183305998632306,within_socio_plus_2017,Within socio + within 2017
+vote_fdp,5,0.6120940775577917,0.6764454133629458,within_socio_plus_2017,Within socio + within 2017
+vote_gruene,1,0.8056124483989142,0.9466202777590716,within_socio_plus_2017,Within socio + within 2017
+vote_gruene,2,0.8602094070577069,0.9229038355932514,within_socio_plus_2017,Within socio + within 2017
+vote_gruene,3,0.8886034734045708,0.9222076025691522,within_socio_plus_2017,Within socio + within 2017
+vote_gruene,4,0.958784641484673,0.948481453461924,within_socio_plus_2017,Within socio + within 2017
+vote_gruene,5,0.8195298817662829,0.9088806840565188,within_socio_plus_2017,Within socio + within 2017
+vote_linke,1,0.9062749822371954,0.7797289379077351,within_socio_plus_2017,Within socio + within 2017
+vote_linke,2,0.9221965648354801,0.7060266827660744,within_socio_plus_2017,Within socio + within 2017
+vote_linke,3,0.9255916144631179,0.49655576235913884,within_socio_plus_2017,Within socio + within 2017
+vote_linke,4,0.9128846099134462,0.6897284018150738,within_socio_plus_2017,Within socio + within 2017
+vote_linke,5,0.8669732283174748,0.7134882265237716,within_socio_plus_2017,Within socio + within 2017
+vote_spd,1,0.9050961964902011,0.7863058694101164,within_socio_plus_2017,Within socio + within 2017
+vote_spd,2,0.9275256617504616,0.8000983918453249,within_socio_plus_2017,Within socio + within 2017
+vote_spd,3,0.9072744255358095,0.7533975240478163,within_socio_plus_2017,Within socio + within 2017
+vote_spd,4,0.9219397116655969,0.6885973808243051,within_socio_plus_2017,Within socio + within 2017
+vote_spd,5,0.8962362838627803,0.7807908562957693,within_socio_plus_2017,Within socio + within 2017
+vote_afd,1,0.8202824922062703,0.7468312261775942,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_afd,2,0.9247048409432019,0.831672664076989,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_afd,3,0.8440988108068525,0.8435965036589924,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_afd,4,0.7112057623451411,0.8284258146617007,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_afd,5,0.928904852438268,0.7729459521078635,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_cdu,1,0.7638960988428671,0.723837180872967,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_cdu,2,0.8932690243185729,0.7139582875450212,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_cdu,3,0.7422207362178992,0.5641046253246527,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_cdu,4,0.8288205208642854,0.6331375618887336,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_cdu,5,0.7263312654971563,0.6045345757676174,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_fdp,1,0.43454353404986973,0.4526380320361047,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_fdp,2,0.249501030191766,-0.052465531125435456,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_fdp,3,0.3824474002359189,0.27163600826789996,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_fdp,4,0.3749260882132564,0.19606014134824404,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_fdp,5,0.5451554338520647,0.41806238074478147,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_gruene,1,0.8011092515607118,0.9194110907026236,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_gruene,2,0.8549231245233908,0.9143484229272062,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_gruene,3,0.9008561854120835,0.922513901608753,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_gruene,4,0.9478139785512695,0.9233276294673112,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_gruene,5,0.8050570372427631,0.8886306251199058,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_linke,1,0.9184227491271243,0.7066477705040538,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_linke,2,0.909267159457769,0.5438179936792662,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_linke,3,0.9231005920105742,0.45982443024908387,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_linke,4,0.8855490869014545,0.4291080115540777,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_linke,5,0.8636210438332711,0.6626101707576593,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_spd,1,0.8440440649681876,0.34389765370760284,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_spd,2,0.8642550627619319,0.3068693033218347,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_spd,3,0.8051862387784954,0.29751624445606156,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_spd,4,0.8667501182257205,0.1905516601191382,within_2017_afd_only,Within 2017 AfD + turnout only
+vote_spd,5,0.7821549656132993,0.35029527852967307,within_2017_afd_only,Within 2017 AfD + turnout only
