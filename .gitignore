@@ -19,3 +19,35 @@ web/next-env.d.ts
 # OS
 .DS_Store
 Thumbs.db
+
+# Rendered documentation artifacts (regeneratable from .qmd / .tex)
+docs/*.html
+docs/*.aux
+docs/*.log
+docs/*.pdf
+docs/*.bbl
+docs/*.blg
+!docs/validation_note.pdf
+texput.log
+
+# Clinton-Marble reading note (local-only)
+docs/clinton_marble_note*
+
+# Open-questions research notes (local-only)
+docs/partisanship_open_questions*
+
+# Literature novelty-check output (local-only)
+docs/literature_novelty_check*
+
+# Candidate-datasets working note (local-only)
+docs/candidate_datasets*
+
+# Claude Code local config
+.claude/
+
+# Raw Zensus microdata (too large; re-downloadable from destatis)
+data/raw/zensus/
+
+# Transient run logs
+output/auxiliary/_run_log.txt
+output/validation/_test_logs/
