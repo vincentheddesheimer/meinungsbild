@@ -1,0 +1,86 @@
+---
+title: "Subnationale öffentliche Meinung in Deutschland: Projektskizze"
+author:
+  - "Hanno Hilbig (UC Davis) · hhilbig@ucdavis.edu"
+  - "Vincent Heddesheimer (Princeton) · vh4264@princeton.edu"
+date: today
+date-format: "D. MMMM YYYY"
+lang: de
+documentclass: article
+fontsize: 11pt
+geometry: margin=1in
+format:
+  pdf:
+    colorlinks: true
+    linkcolor: black
+    urlcolor: black
+    include-in-header:
+      text: |
+        \usepackage{amsmath}
+        \usepackage{booktabs}
+---
+
+# Hintergrund und Ziel
+
+Im Rahmen des GERDA-Projekts haben wir damit begonnen, MRP-basierte Schätzungen subnationaler öffentlicher Meinung in Deutschland zu erstellen, auf Bundesland-, Wahlkreis- und Kreisebene. Das Vorhaben baut direkt auf der GERDA-Wahldaten-Infrastruktur auf (<https://german-elections.com>; vgl. den Beitrag in *Scientific Data*) und ergänzt diese um Schätzungen öffentlicher Meinung. Ziel ist ein möglichst umfassender, methodisch sorgfältiger und an Wahlergebnissen validierter Datensatz subnationaler Meinungsschätzungen, den wir öffentlich zur Verfügung stellen wollen. Für Deutschland liegt ein solcher Datensatz nach unserem Kenntnisstand bisher nicht in vergleichbarer systematischer Form vor.
+
+Wir haben bereits konkretes Interesse an solchen Daten registriert, etwa aus dem Journalismus (z. B. *Die Zeit*); zudem beobachten wir in der wissenschaftlichen Community einen wachsenden Bedarf, lokale Veränderungen der Einstellungen zu Themen wie Klimawandel, Migration oder Demokratie systematisch nachzuzeichnen, insbesondere weil viele aktuelle Forschungsdesigns lokale Variation nutzen, um politische Einstellungen und politisches Verhalten zu erklären.
+
+# Aktueller Stand
+
+Die laufende Pipeline kombiniert vier GLES-Programme: GLES Tracking 2009–2023 (ZA6832), GLES Querschnitt 2025 (ZA10100), GLES Rolling Cross-Section 2025 (ZA10101) sowie die GLES Kumulation 2009–2021 (ZA6835). Sie erstellt derzeit Schätzungen für 43 Politikitems auf den drei genannten räumlichen Ebenen. Eine erste interaktive Demo-Version ist unter <https://www.german-elections.com/meinungsbild/> einsehbar. Wir haben damit bereits begonnen; die ersten Validierungsergebnisse auf Basis der Wahlergebnis-Items (siehe unten) deuten allerdings darauf hin, dass der aktuelle Ansatz noch verbessert werden kann, was direkt zur Datenfrage führt.
+
+# Methodisches Vorgehen
+
+Für jedes Politikitem $j$ und jede Person $i$ mit binärer Antwort $y_{ij} \in \{0, 1\}$ läuft die Pipeline in zwei Schritten ab.
+
+**Schritt 1 (Mehrebenenmodell):**
+$$
+y_{ij} \sim \text{Bernoulli}(\pi_{ij}), \qquad
+\text{logit}(\pi_{ij}) = \mathbf{x}_i' \boldsymbol{\beta}_j \;+\; \sum_{k} \alpha^{(k)}_{j,\, g_k(i)},
+$$
+wobei $\mathbf{x}_i$ individuelle Prädiktoren (Geschlecht) und Kreis-Kovariaten (Strukturmerkmale) enthält, und $\alpha^{(k)}$ Random-Effects über mehrere Gruppierungsdimensionen $k$ sind: Alter, Bildung, deren paarweise Interaktionen mit Geschlecht und untereinander, Survey-Quelle, Legislaturperiode sowie Bundesland-, Wahlkreis- und Kreisebene. Schätzung mit `lme4::glmer` (binomiale Familie, Logit-Link).
+
+**Schritt 2 (Poststratifikation):** Für jede räumliche Einheit $u$ (Kreis, Wahlkreis, Bundesland) aggregieren wir die Modellvorhersagen über die Zensus-2022-Zellen $\mathcal{Z}_u$ (Alter $\times$ Geschlecht $\times$ Bildung):
+$$
+\hat\theta_{u j} \;=\; \frac{1}{N_u} \sum_{z \in \mathcal{Z}_u} N_{z} \cdot \hat\pi_{z j},
+$$
+mit Zellpopulationen $N_z$ und $N_u = \sum_{z \in \mathcal{Z}_u} N_z$.
+
+Für Berlin nutzen wir Bezirksdaten, um zwischen den zwölf Berliner Wahlkreisen sinnvoll differenzieren zu können.
+
+# Validierung und Datenbedarf
+
+Wir validieren $\hat\theta_{u j}$ für $j \in \{\text{vote\_cdu}, \text{vote\_spd}, \dots\}$ gegen die tatsächlichen Zweitstimmenanteile der Bundestagswahl 2021 auf Kreisebene. Berichtet werden zwei Maße: die Korrelation $r$ zwischen Vorhersage und Wahrheit über alle Kreise hinweg, sowie die Korrelation $r_{\text{within}}$ nach Demeaning beider Größen auf Bundeslandebene. Tabelle 1 zeigt die Ergebnisse einer 5-fachen räumlichen Kreuzvalidierung; die Modelle enthalten dabei *keine* Wahlergebnisse als Kovariaten, da die Validierung sonst gegenüber genau diesen Größen zirkulär wäre.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Partei & $r$ & $r_{\text{within}}$ & Innerhalb-Bundesland-SD (Prozentpunkte) \\
+\midrule
+AfD          & 0{,}83 & 0{,}66 & 2{,}7 \\
+CDU/CSU      & 0{,}82 & 0{,}68 & 3{,}8 \\
+Grüne        & 0{,}82 & 0{,}84 & 4{,}5 \\
+DIE LINKE    & 0{,}89 & 0{,}54 & 1{,}2 \\
+SPD          & 0{,}84 & 0{,}27 & 3{,}2 \\
+FDP          & 0{,}47 & 0{,}39 & 1{,}4 \\
+\midrule
+Median       & 0{,}83 & 0{,}60 & 2{,}9 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\footnotesize Tabelle 1: Korrelationen zwischen MRP-Vorhersagen und tatsächlichen BTW-2021-Zweitstimmenanteilen auf Kreisebene. 5-fache räumliche Kreuzvalidierung (jeweils 80 Kreise als Holdout). Spezifikation ohne Wahlergebnis-Kovariaten. Die Innerhalb-Bundesland-SD ist die Standardabweichung des tatsächlichen Stimmenanteils innerhalb von Bundesländern; sie begrenzt mechanisch, wieviel Innerhalb-Variation $r_{\text{within}}$ überhaupt erfassen kann.\par}
+\end{center}
+
+Die Ergebnisse fallen je nach Partei unterschiedlich aus. Die Korrelation über alle Kreise hinweg liegt im Median bei $0{,}83$ und spricht dafür, dass das Modell zentrale räumliche Unterschiede gut abbildet. Die Within-Korrelation fällt jedoch deutlich heterogener aus: Für SPD und FDP ist sie schwach, während sie für DIE LINKE zusätzlich durch sehr geringe tatsächliche Innerhalb-Bundesland-Variation begrenzt wird (Innerhalb-SD nur $1{,}2$ Prozentpunkte). Daraus ergibt sich der zentrale Datenbedarf: zusätzliche Umfragedaten mit feingranularer Geoinformation, um die Schätzungsunsicherheit auf Kreisebene und über Items und Parteien hinweg systematisch zu verringern.
+
+# Konkrete Anfrage
+
+Wir würden uns sehr freuen, wenn Sie uns eine Übersicht der Datensätze zukommen lassen könnten, die für ein Projekt dieser Art grundsätzlich über GESIS zugänglich gemacht werden könnten. Die folgenden Umfragen wären für uns von besonderem Interesse; Hinweise auf weitere geeignete Datensätze sind ausdrücklich willkommen:
+
+- **ALLBUS Kumulation 1980–2018** (ZA5274): vier Jahrzehnte ALLBUS-Zeitreihe.
+- **Politbarometer Kumulation 1977–2024** (ZA2391): die längste und größte deutsche Meinungs-Zeitreihe, mit rund 1.000 Befragten pro Monat.
+- **ESS Deutschland, Runden 1–10**: zehn Erhebungswellen mit NUTS-2-Geographie (Regierungsbezirk).
+- **ISSP-Modulkumulationen**: vertiefende Politikitem-Batterien (etwa Rolle des Staates, Umwelt, Nationale Identität).
+- **FReDA**: laut Sebastians Einschätzung mit der besten regionalen Abdeckung unter den GESIS-nahen Programmen.

@@ -28,6 +28,7 @@ docs/*.pdf
 docs/*.bbl
 docs/*.blg
 !docs/validation_note.pdf
+!docs/gesis_project_outline.pdf
 texput.log
 
 # Clinton-Marble reading note (local-only)
