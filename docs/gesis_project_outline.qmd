@@ -75,12 +75,127 @@ Median       & 0{,}83 & 0{,}60 & 2{,}9 \\
 
 Die Ergebnisse fallen je nach Partei unterschiedlich aus. Die Korrelation über alle Kreise hinweg liegt im Median bei $0{,}83$ und spricht dafür, dass das Modell zentrale räumliche Unterschiede gut abbildet. Die Within-Korrelation fällt jedoch deutlich heterogener aus: Für SPD und FDP ist sie schwach, während sie für DIE LINKE zusätzlich durch sehr geringe tatsächliche Innerhalb-Bundesland-Variation begrenzt wird (Innerhalb-SD nur $1{,}2$ Prozentpunkte). Daraus ergibt sich der zentrale Datenbedarf: zusätzliche Umfragedaten mit feingranularer Geoinformation, um die Schätzungsunsicherheit auf Kreisebene und über Items und Parteien hinweg systematisch zu verringern.
 
-# Konkrete Anfrage
+# Konkrete Engpässe der aktuellen Pipeline
 
-Wir würden uns sehr freuen, wenn Sie uns eine Übersicht der Datensätze zukommen lassen könnten, die für ein Projekt dieser Art grundsätzlich über GESIS zugänglich gemacht werden könnten. Die folgenden Umfragen wären für uns von besonderem Interesse; Hinweise auf weitere geeignete Datensätze sind ausdrücklich willkommen:
+Eine Codeanalyse der Harmonisierungs- und Schätzpipeline lässt drei spezifische Engpässe erkennen, die die schwache Innerhalb-Bundesland-Vorhersage erklären.
 
-- **ALLBUS Kumulation 1980–2018** (ZA5274): vier Jahrzehnte ALLBUS-Zeitreihe.
-- **Politbarometer Kumulation 1977–2024** (ZA2391): die längste und größte deutsche Meinungs-Zeitreihe, mit rund 1.000 Befragten pro Monat.
-- **ESS Deutschland, Runden 1–10**: zehn Erhebungswellen mit NUTS-2-Geographie (Regierungsbezirk).
-- **ISSP-Modulkumulationen**: vertiefende Politikitem-Batterien (etwa Rolle des Staates, Umwelt, Nationale Identität).
-- **FReDA**: laut Sebastians Einschätzung mit der besten regionalen Abdeckung unter den GESIS-nahen Programmen.
+*Erstens, ALLBUS-Befragte ohne sub-staatliche Geoinformation.* Die Standard-ALLBUS-SUF enthält weder Wahlkreis- noch Kreis- oder Gemeindekennziffer. In unserer Pipeline werden alle ca. 25.000 ALLBUS-Befragten mit `wkr_nr = NA` und `county_code = NA` codiert; sie tragen damit nichts zu den Random-Effects auf Kreis- oder Wahlkreisebene bei. Fünf Items unserer Konkordanz werden ausschließlich in ALLBUS gemessen (`cannabis`, `afd_danger`, `asylum_too_many`, `defense_spending`, `ukraine_military_aid`); für diese Items existiert derzeit *keinerlei* Innerhalb-Bundesland-Signal.
+
+*Zweitens, verlustbehaftete Kreis-Zuordnung im GLES-Querschnitt.* Da die GLES-Kumulation Wahlkreise, aber keine Kreiskennziffern bereitstellt, ordnen wir jeden Befragten dem flächengrößten Kreis seines Wahlkreises zu (`slice_max(pct_area)`). Da Wahlkreise im Mittel mit etwa sechs Kreisen überlappen und einige Wahlkreise Kreisgrenzen ungefähr hälftig durchschneiden, werden auf diesem Weg rund 15 Prozent der Befragten falsch zugeordnet.
+
+*Drittens, dünnbesetzte Kreis-Beobachtungen.* Mit etwa 118.000 Befragten verteilt auf ca. 400 Kreise enthalten viele Kreise nur ein bis zwei Befragte. Die Kreis-Random-Effects schrumpfen entsprechend stark zur Null und können lokale Meinungsunterschiede nicht mehr von Stichprobenrauschen trennen.
+
+# Datenangebot von GESIS
+
+Im Anschluss an unsere ursprüngliche Anfrage hat GESIS sechs Datensätze mit feingranularer Geoinformation benannt; zusätzlich wird derzeit der Deutschland-Monitor geocodiert. Wir haben die Dokumentationen ausgewertet und in Tabelle 2 priorisiert. Die Bewertung folgt drei Kriterien: (i) Anzahl Befragter, die durch den Datenzugriff präzise Kreis-Zuordnung gewinnen, (ii) thematische Überschneidung mit unseren 43 Items, (iii) Stichprobenqualität.
+
+\begin{center}
+\small
+\begin{tabular}{p{0.5cm}p{4.6cm}p{2.8cm}p{1.7cm}p{4.6cm}}
+\toprule
+Prio & Datensatz & Geo-Einheit & Approx.\ N & Mehrwert für MRP \\
+\midrule
+1 & ZA5260 ALLBUS Sensitive Regionaldaten        & Gemeinde (ab 1994) & ~45.000 & ~30.000+ Befragte gewinnen exakte Kreis-Zuordnung \\
+1 & ZA6828 GLES-Querschnitt Sensitive Regionaldaten & Gemeinde + 1\,km-Raster & ~10.000 & Exakter Kreis statt verlustbehafteter Crosswalk \\
+2 & ZA5664 GESIS Panel.pop Extended Edition     & Kreis + Gemeinde + 1\,km & ~4.800/Welle, 25+ Wellen & Neue Datenquelle, Wahrscheinlichkeitsstichprobe, 12 inhaltliche Treffer \\
+2 & Deutschland-Monitor (ZA8801, ZA8920+)       & Kreis/Gemeinde (in Geocodierung) & ~4.000/Jahr & Neue Quelle mit einzigartiger Populismus-Batterie \\
+3 & ZA6832 GLES-Tracking (PLZ auf Anfrage)       & Postleitzahl       & 52.000 & PLZ erlaubt exakte Kreis-Zuordnung \\
+-- & ZA8755 FReDA RUF                            & nur Bundesland im RUF & ~20.000/Welle & Altersbereich auf 18--49 begrenzt; geringe inhaltliche Überschneidung \\
+-- & ZA5262 ALLBUS Kleinräumige Geodaten         & 1\,km-Raster       & ~10.000 & Nur Kontextdaten; gleiche Befragte wie ZA5260 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\footnotesize Tabelle 2: Priorisierung der von GESIS angebotenen Datensätze mit feingranularer Geoinformation. Stand April 2026.\par}
+\end{center}
+
+## Tier 1: ALLBUS Sensitive Regionaldaten (ZA5260)
+
+ZA5260 stellt Gemeinde- und Kreiskennziffern für ALLBUS-Befragte ab 1994 bereit, verknüpfbar mit der Standard-SUF über Befragten-ID. Die ALLBUS-Kumulation 1994--2018 enthält Items, die direkt mit unserer Konkordanz überlappen. Tabelle 3 zeigt die wichtigsten Treffer.
+
+\begin{center}
+\small
+\begin{tabular}{p{3.6cm}p{6.6cm}p{2.0cm}p{2.5cm}}
+\toprule
+Meinungsbild-Item & ALLBUS-Variable (Kumulation) & Wellen mit Geo & N (geo-codiert) \\
+\midrule
+\texttt{lr\_self}              & V24 (Links--Rechts, 1--10)            & 1994--2018 & ~30.000+ \\
+\texttt{political\_interest}   & V25 (politisches Interesse, ordinal)  & 1994--2018 & ~30.000+ \\
+\texttt{econ\_current\_national} & V14 (nationale Wirtschaftslage, 5-stufig) & 1994--2018 & ~30.000+ \\
+\texttt{econ\_current\_personal} & V16 (eigene Wirtschaftslage, 5-stufig)    & 1994--2018 & ~30.000+ \\
+\texttt{democracy\_satisfaction} & V22 (Demokratiezufriedenheit, 6-stufig)  & 1998, 2000, 2002, 2008+ & ~8.000--12.000 \\
+Migrationseinstellungen        & Ethnozentrismus-Batterie (Zuzug Aussiedler, Asylsuchende, Einstellungsskala) & 1996--2018 (Auswahl) & ~20.000--25.000 \\
+Institutionenvertrauen         & Vertrauensbatterie (Bundestag, Parteien, BVerfG, etc.) & seit ~1984 (Auswahl) & ~10.000--20.000 \\
+\texttt{eu\_integration}       & EU-Verbundenheit / Mitgliedschaftsbewertung & Auswahl & ~5.000--10.000 \\
+Geschlechterrolle              & Section 9 (Rolle der Frau)            & Auswahl & ~5.000--10.000 \\
+\texttt{nuclear\_energy}       & Section 2 (Kernenergie)               & Auswahl & ~3.000--6.000 \\
+\texttt{income\_reduce}        & Soziale-Ungleichheit-Modul            & Auswahl (~10-Jahres-Zyklus) & ~5.000--10.000 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+{\footnotesize Tabelle 3: Ausgewählte Variablen-Überschneidungen ALLBUS Sensitive Regionaldaten (ZA5260) mit Meinungsbild-Konkordanz.\par}
+\end{center}
+
+Die Migrationsitems erfordern Harmonisierung: Die ALLBUS-Ethnozentrismus-Batterie fragt getrennt nach Zuzug von Aussiedlern, Asylsuchenden, EU- und Nicht-EU-Arbeitnehmern und nutzt andere Skalen als die GLES-Migrationsfrage. Unser bestehender `apply_binary_rule()`-Mechanismus verarbeitet datensatzspezifische Recodierungen über die Konkordanz und unterstützt diese Zuordnung direkt.
+
+ZA5260 endet 2018. Die fünf ALLBUS-exklusiven Items aus ZA8974 (2023/2024) sind damit *nicht* abgedeckt. Die Frage, ob Regionaldaten für die Wellen 2021 und 2023/2024 produziert oder bereitgestellt werden können, ist für unser Vorhaben zentral.
+
+## Tier 1: GLES-Querschnitt Sensitive Regionaldaten (ZA6828)
+
+ZA6828 enthält exakte Gemeindekennziffern für die GLES-Vor- und Nachwahlbefragungen 2013 und 2017 (~10.000 Befragte). Diese Befragten sind bereits Teil unserer Pipeline (über ZA6835), ihre Kreis-Zuordnung erfolgt aber bislang über die verlustbehaftete Wahlkreis-Crosswalk. Mit Gemeindekennziffer ist die Zuordnung deterministisch (die ersten fünf Stellen des AGS sind die Kreiskennziffer); der Korrekturgewinn betrifft die GLES-Items insgesamt (`immigration_restrict`, `climate_ego`, `taxes_vs_spending`, `lr_self`, `democracy_satisfaction` etc.).
+
+## Tier 2: GESIS Panel.pop Extended Edition (ZA5664)
+
+Das GESIS-Panel ist eine registerbasierte Wahrscheinlichkeitsstichprobe mit zweimonatlichen Wellen seit 2013, ca. 4.800 aktive Panelisten pro Welle. Die Extended Edition enthält Kreis- und Gemeindekennziffern. Es handelt sich um eine *neue* Datenquelle für unsere Pipeline. Inhaltliche Treffer sind besonders ergiebig:
+
+- Wellen-übergreifend (alle Wellen bb--ma, 2014--2025, je ca. 4.800 Befragte): `democracy_satisfaction`, `lr_self` (mit Skalenwechsel ab Welle ia/2021), `political_interest`, `trust_general`, alle sechs Vote-Items (Sonntagsfrage).
+- Spezifische Module: `nuclear_energy` (Kernstudie zd, 2014--2022); CSES-Modul 5 in Welle ee (2017) liefert Treffer für `income_reduce`, `populism_people_decide`, `populism_compromise`, `gov_performance`, `immigration_econ_good`, `immigration_culture_threat`; Welle cf (2015) liefert `same_sex_marriage`; Wellen cd--dd (2015--2016) liefern `referendum_federal`.
+
+Der Skalenwechsel der Links-Rechts-Selbsteinstufung von 0--10 zu einer 5-stufigen verbalisierten Skala ab Welle ia (Februar 2021) erfordert Harmonisierung über die Survey-Quellen-Variable.
+
+## Tier 2: Deutschland-Monitor
+
+Der Deutschland-Monitor wird seit 2023 jährlich vom Konsortium ZSH Halle, Universität Jena und GESIS durchgeführt; GESIS ist mitverantwortlich (Reinhard Pollak) und arbeitet derzeit an der Geocodierung. Die Haupterhebung umfasst ca. 4.000 Befragte pro Jahr (CATI Dual-Frame RDD, ab 2026 registerbasiert); eine regionale Vertiefungsstudie ergänzt ca. 4.000 Befragte in zwölf ausgewählten Kreisen. Inhaltliche Treffer:
+
+- *Standbein, jährlich wiederholt:* `democracy_satisfaction` (F41), `lr_self` (F50, 0--10), Vote-Items inkl.\ BSW (F48--49), `populism_people_decide` (F47e), `populism_compromise` (F47d), `econ_current_national` (F36a), `econ_current_personal` (F36d), `gov_performance` (F37a), `income_reduce` / Verteilungsgerechtigkeit (F51).
+- *Schwerpunkt 2025:* `defense_spending` (F32b), `fear_war` (F32a), Migrations- und Klima-Items mit abweichender Itemformulierung (F11, F28).
+
+Zwei Aspekte heben den Deutschland-Monitor von anderen Quellen ab: Erstens ist die Populismus- und Autoritarismus-Batterie (F46--47) mit über zehn Items die reichhaltigste in den uns bekannten deutschen Surveys; sie umfasst u. a. die Präferenz für eine starke Einheitspartei, einen starken Führer ohne Parlament und die grundsätzliche Akzeptanz von Diktatur. Zweitens werden die Standbein-Items jährlich wiederholt und bilden eine konsistente Zeitreihe seit 2023.
+
+## Nicht aufgenommen oder nachrangig
+
+*FReDA (ZA8755)* erscheint nach genauerer Prüfung weniger geeignet als ursprünglich angenommen: Der Altersbereich ist auf 18--49 Jahre beschränkt, sodass etwa 30 Prozent der erwachsenen Bevölkerung fehlen; das RUF enthält zudem nur Bundesland, nicht Kreis oder Wahlkreis; die thematische Überschneidung mit unserer Konkordanz ist gering. *ZA5262 (ALLBUS Kleinräumige Geodaten)* liefert nur Kontextdaten (Zensus-Demografie, Lärm) für dieselben Befragten wie ZA5260; der Mehrwert ist begrenzt, da unsere Pipeline bereits Kreis-Kovariaten nutzt.
+
+# Methodische Erweiterungen
+
+Mit der präzisen Geoinformation aus den Tier-1- und Tier-2-Datensätzen lassen sich drei methodische Erweiterungen umsetzen, die direkt auf den oben genannten Engpässen ansetzen.
+
+*Geographisch-demographische Interaktionen.* Im aktuellen Modell sind die Bildungs- und Alterseffekte über alle Kreise hinweg identisch. Mit ausreichender Befragten-pro-Kreis-Dichte können wir Random-Slopes zulassen, die die Bildungs- und Alterseffekte zwischen Kreistypen variieren lassen. Dafür eignet sich die BBSR-Kreistypologie mit vier Stufen (kreisfreie Großstadt, städtischer Kreis, ländlicher Kreis mit Verdichtungsansätzen, dünn besiedelter ländlicher Kreis):
+$$
+\ldots + \alpha^{(\text{educ}\times\text{kreistyp})}_{j} + \alpha^{(\text{age}\times\text{kreistyp})}_{j} + \ldots
+$$
+Mit fünf Bildungs- und vier Kreistypen sowie fünf Altersgruppen ergeben sich pro Term zwanzig Interaktionszellen.
+
+*Räumliche Glättung über Raumordnungsregionen.* Die 96 Raumordnungsregionen (in ZA5260 direkt verfügbar) bilden eine Zwischenebene zwischen Bundesland (16 Einheiten) und Kreis (~400 Einheiten). Ein zusätzlicher Random-Effect $\alpha^{(\text{ROR})}_{j}$ wirkt als rechentechnisch günstige räumliche Glättung im lme4-Rahmen.
+
+*Verbessertes Random-Effect-Shrinkage durch dichtere Kreis-Beobachtungen.* Allein die korrekte Geo-Zuordnung der ALLBUS-Befragten erhöht die durchschnittliche Befragten-pro-Kreis-Dichte spürbar; analog bei den GLES-Querschnittsbefragten. Die Random-Effects $\alpha^{(\text{kreis})}_{j}$ können entsprechend weniger zur Null schrumpfen und mehr lokale Variation aufnehmen.
+
+# Vorgeschlagenes Vorgehen
+
+Wir schlagen ein dreiphasiges Vorgehen vor, das die organisatorische Komplexität schrittweise erhöht:
+
+1. **Explorativer Vor-Ort-Aufenthalt am SDC Köln.** In einer ersten Phase (mehrere Tage am GESIS-SDC) prüfen wir Datenqualität und Verknüpfbarkeit der Regionaldaten mit den Standard-SUFs, testen die Variablen-Harmonisierung (insbesondere die ALLBUS-Migrationsbatterie und die GESIS-Panel-Skalenumstellung) und führen Pilot-MRP-Modelle für drei bis fünf Items durch. Ergebnis ist eine empirische Einschätzung des tatsächlichen Schätzgewinns durch präzise Geo-Zuordnung.
+
+2. **Pipeline-Einreichung über Blind SANE.** Auf Grundlage der Phase-1-Ergebnisse passen wir die R-Pipeline für eine Ausführung in der GESIS Blind-SANE-Umgebung an und reichen sie für alle 43 Items ein. Rückgabe sind ausschließlich aggregierte Schätzungen auf Bundesland-, Wahlkreis- und Kreisebene (etwa $400 \times 43 = 17.200$ Zellen pro Geo-Ebene mit reinen Anteilswerten); diese sollten die Disclosure-Prüfung problemlos passieren.
+
+3. **Gemeinsame Methodenpublikation.** Die Kooperation mündet in einer ko-autorierten Methodenpublikation (Arbeitstitel: *Improving Subnational Opinion Estimation Through Fine-Grained Survey Geocoding: Evidence from Germany*), die den empirischen Mehrwert präziser Geocodierung dokumentiert und zugleich die GESIS-SDC/SANE-Infrastruktur als Modellfall für den verantwortungsvollen Umgang mit sensiblen Geodaten sichtbar macht. Mögliche Zielzeitschriften: *Political Analysis*, *Political Science Research and Methods*, *Survey Research Methods*.
+
+# Offene Fragen
+
+Folgende Punkte würden wir gerne mit Ihnen klären:
+
+- **ALLBUS-Wellen ab 2021.** Die fünf ALLBUS-exklusiven Items (`cannabis`, `afd_danger`, `defense_spending`, `ukraine_military_aid`, `asylum_too_many`) stammen aus ZA8974 (2023/2024) und liegen damit außerhalb des Abdeckungszeitraums von ZA5260. Können Regionaldaten für die Wellen 2021 und 2023/2024 produziert oder bereitgestellt werden?
+- **Geocodierung des Deutschland-Monitors.** Welche Geo-Einheiten wird die geocodierte Fassung enthalten (Kreis, Gemeinde, 1-km-Raster)? Bezieht sich die Geocodierung auf die Haupterhebung, die regionale Vertiefungsstudie oder beide?
+- **Politbarometer, ESS, ISSP.** In unserer ursprünglichen Liste hatten wir auch das Politbarometer (ZA2391), die deutschen ESS-Daten und die ISSP-Modulkumulationen genannt. Existieren auch für diese Erhebungen Regionaldaten-Produkte oder Geocodierungs-Infrastruktur, die im Rahmen einer Kooperation zugänglich gemacht werden könnten?
+- **Zugangsmodalitäten.** Lassen sich Vor-Ort-Aufenthalt am SDC Köln und anschließende Blind-SANE-Einreichung wie skizziert kombinieren, oder gibt es organisatorische Aspekte, die wir bei der Planung berücksichtigen sollten?
