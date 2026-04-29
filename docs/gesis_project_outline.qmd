@@ -183,19 +183,28 @@ Mit fünf Bildungs- und vier Kreistypen sowie fünf Altersgruppen ergeben sich p
 
 # Vorgeschlagenes Vorgehen
 
-Wir schlagen ein dreiphasiges Vorgehen vor, das die organisatorische Komplexität schrittweise erhöht:
+Unser bevorzugter Modus ist eine reine Code-Kooperation: Wir stellen die vollständige R-Pipeline (Harmonisierung, Modellschätzung, Poststratifikation) als versioniertes Projekt zur Verfügung, GESIS-Mitarbeitende führen sie intern auf den sensiblen Daten aus, und an uns zurückgegeben werden ausschließlich aggregierte Outputs. Die sensiblen Mikrodaten verlassen das GESIS-Umfeld zu keinem Zeitpunkt; ein Vor-Ort-Aufenthalt unsererseits ist nicht erforderlich. Die Skripte werden grundsätzlich so entworfen, dass sie ausschließlich auf Variablen zugreifen und Outputs erzeugen, deren Verwendung und Export nach den jeweiligen Datenschutz- und Nutzungsvereinbarungen rechtlich zulässig sind.
 
-1. **Explorativer Vor-Ort-Aufenthalt am SDC Köln.** In einer ersten Phase (mehrere Tage am GESIS-SDC) prüfen wir Datenqualität und Verknüpfbarkeit der Regionaldaten mit den Standard-SUFs, testen die Variablen-Harmonisierung (insbesondere die ALLBUS-Migrationsbatterie und die GESIS-Panel-Skalenumstellung) und führen Pilot-MRP-Modelle für drei bis fünf Items durch. Ergebnis ist eine empirische Einschätzung des tatsächlichen Schätzgewinns durch präzise Geo-Zuordnung.
+Konkret schlagen wir folgendes Vorgehen vor:
 
-2. **Pipeline-Einreichung über Blind SANE.** Auf Grundlage der Phase-1-Ergebnisse passen wir die R-Pipeline für eine Ausführung in der GESIS Blind-SANE-Umgebung an und reichen sie für alle 43 Items ein. Rückgabe sind ausschließlich aggregierte Schätzungen auf Bundesland-, Wahlkreis- und Kreisebene (etwa $400 \times 43 = 17.200$ Zellen pro Geo-Ebene mit reinen Anteilswerten); diese sollten die Disclosure-Prüfung problemlos passieren.
+1. **Code-Entwicklung auf synthetischen Daten.** Wir nehmen das Angebot von GESIS gerne auf, synthetische Daten mit derselben Struktur wie die sensiblen Originaldatensätze bereitzustellen. Auf dieser synthetischen Grundlage entwickeln, testen und validieren wir die Pipeline lokal --- von der Harmonisierung bis zur Poststratifikation --- bevor Code zur Ausführung auf den Originaldaten eingereicht wird. Damit reduzieren sich spätere Iterationsschleifen mit GESIS auf inhaltliche statt rein technische Fragen.
 
-3. **Gemeinsame Methodenpublikation.** Die Kooperation mündet in einer ko-autorierten Methodenpublikation (Arbeitstitel: *Improving Subnational Opinion Estimation Through Fine-Grained Survey Geocoding: Evidence from Germany*), die den empirischen Mehrwert präziser Geocodierung dokumentiert und zugleich die GESIS-SDC/SANE-Infrastruktur als Modellfall für den verantwortungsvollen Umgang mit sensiblen Geodaten sichtbar macht. Mögliche Zielzeitschriften: *Political Analysis*, *Political Science Research and Methods*, *Survey Research Methods*.
+2. **Pilot-Einreichung zur Validierung der Harmonisierung.** In einer ersten Einreichung auf den Originaldaten übermitteln wir Skripte, die ausschließlich diagnostische Aggregate produzieren: Verteilung der Geo-Identifier nach Datenquelle, Befragten-pro-Kreis-Dichte, Itemverteilungen nach Anwendung unserer binären Recodierungen, sowie Korrelationen der Politik-Items mit Kreis-Strukturdaten. Diese Outputs erlauben uns, die Variablen-Harmonisierung (insbesondere die ALLBUS-Ethnozentrismus-Batterie und die GESIS-Panel-Skalenumstellung von 0--10 zu 5-stufig ab Welle ia/2021) zu validieren, ohne dass individuelle Daten ausgespielt werden.
 
-# Offene Fragen
+3. **Vollständige Pipeline-Einreichung.** Auf Grundlage der Pilot-Ergebnisse reichen wir die produktive Pipeline für alle 43 Items ein. Rückgabe sind die aggregierten Schätzungen auf Bundesland-, Wahlkreis- und Kreisebene (etwa $400 \times 43 = 17.200$ Zellen pro Geo-Ebene mit reinen Anteilswerten), Modelldiagnostik (AIC, Konvergenz, Varianzkomponenten) und Validierungsstatistiken gegen Wahlergebnisse. Diese Outputs sind disclosure-unkritisch, da sie ausschließlich Aggregate über jeweils hunderte bis tausende Befragte darstellen. Die Laufzeit der Pipeline liegt erfahrungsgemäß im Bereich von 45--90 Minuten auf einem Standard-Server.
 
-Folgende Punkte würden wir gerne mit Ihnen klären:
+4. **Iterationen.** Nach Bedarf folgen weitere Iterationen, etwa zur Modellspezifikation, zur Aufnahme zusätzlicher Datenquellen oder zur Erweiterung der Itemkonkordanz.
 
-- **ALLBUS-Wellen ab 2021.** Die fünf ALLBUS-exklusiven Items (`cannabis`, `afd_danger`, `defense_spending`, `ukraine_military_aid`, `asylum_too_many`) stammen aus ZA8974 (2023/2024) und liegen damit außerhalb des Abdeckungszeitraums von ZA5260. Können Regionaldaten für die Wellen 2021 und 2023/2024 produziert oder bereitgestellt werden?
-- **Geocodierung des Deutschland-Monitors.** Welche Geo-Einheiten wird die geocodierte Fassung enthalten (Kreis, Gemeinde, 1-km-Raster)? Bezieht sich die Geocodierung auf die Haupterhebung, die regionale Vertiefungsstudie oder beide?
-- **Politbarometer, ESS, ISSP.** In unserer ursprünglichen Liste hatten wir auch das Politbarometer (ZA2391), die deutschen ESS-Daten und die ISSP-Modulkumulationen genannt. Existieren auch für diese Erhebungen Regionaldaten-Produkte oder Geocodierungs-Infrastruktur, die im Rahmen einer Kooperation zugänglich gemacht werden könnten?
-- **Zugangsmodalitäten.** Lassen sich Vor-Ort-Aufenthalt am SDC Köln und anschließende Blind-SANE-Einreichung wie skizziert kombinieren, oder gibt es organisatorische Aspekte, die wir bei der Planung berücksichtigen sollten?
+# Mögliche Verwertung
+
+Für die zurückgegebenen Schätzungen sehen wir mehrere komplementäre Verwertungsoptionen:
+
+**Veröffentlichung des Datensatzes.** Den aggregierten Schätzdatensatz möchten wir öffentlich zugänglich machen. Dafür kommen mehrere, sich nicht ausschließende Kanäle in Frage:
+
+- Publikation als Forschungsdatensatz über das GESIS-Datenarchiv (mit DOI und Versionierung).
+- Eigenständige interaktive Website zur räumlichen und thematischen Exploration auf Karten- und Itemebene.
+- Integration in die bestehende GERDA-Wahldaten-Infrastruktur unter <https://german-elections.com> (gegenwärtig bereits für die Demo-Version umgesetzt).
+
+**Medienkooperation.** Wir haben bereits konkretes journalistisches Interesse registriert; insbesondere Christian Endt (*Die Zeit*) hat Interesse an einer Kooperation signalisiert. Eine begleitete Berichterstattung würde die Sichtbarkeit und Reichweite des Datensatzes deutlich erhöhen.
+
+**Wissenschaftliche Publikation.** Methodisch wie inhaltlich erscheinen zwei Publikationsformate sinnvoll: ein *Data Descriptor* (etwa in *Scientific Data*, im Anschluss an unsere bestehende GERDA-Publikation), der den Datensatz formal dokumentiert, oder eine methodologische Note, die den empirischen Mehrwert präziser Geocodierung für MRP herausarbeitet. Mögliche Zielzeitschriften für letztere: *Political Analysis*, *Political Science Research and Methods*, *Survey Research Methods*.
